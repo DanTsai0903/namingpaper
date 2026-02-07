@@ -20,25 +20,23 @@ A CLI tool that renames academic PDF papers using AI-extracted metadata.
 ## Installation
 
 ```bash
-# Using uv (recommended)
-uv add namingpaper
-
-# With optional providers
-uv add "namingpaper[openai]"    # OpenAI support
-uv add "namingpaper[gemini]"    # Gemini support
-
-# Or install from source
-git clone https://github.com/your-username/namingpaper.git
+# Install from source
+git clone https://github.com/DanTsai0903/namingpaper.git
 cd namingpaper
 uv sync
+
+# With optional providers
+uv sync --extra openai    # OpenAI support
+uv sync --extra gemini    # Gemini support
 ```
 
 ## Quick Start
 
 ```bash
 # Default uses Ollama (local, no API key needed)
-# Make sure Ollama is running with a vision model
-ollama pull llama3.2-vision
+# Make sure Ollama is running with the required models
+ollama pull deepseek-ocr
+ollama pull llama3.1:8b
 
 # Preview the rename (dry run)
 namingpaper rename paper.pdf
@@ -272,7 +270,7 @@ namingpaper rename paper.pdf
 NAMINGPAPER_MODEL_NAME=deepseek-ocr namingpaper rename paper.pdf
 ```
 
-### Claude
+### Claude (included by default)
 
 ```bash
 export NAMINGPAPER_ANTHROPIC_API_KEY=sk-ant-...
@@ -282,7 +280,7 @@ namingpaper rename paper.pdf -p claude
 ### OpenAI
 
 ```bash
-uv add "namingpaper[openai]"
+uv sync --extra openai
 export NAMINGPAPER_OPENAI_API_KEY=sk-...
 namingpaper rename paper.pdf -p openai
 ```
@@ -290,7 +288,7 @@ namingpaper rename paper.pdf -p openai
 ### Gemini
 
 ```bash
-uv add "namingpaper[gemini]"
+uv sync --extra gemini
 export NAMINGPAPER_GEMINI_API_KEY=...
 namingpaper rename paper.pdf -p gemini
 ```
@@ -299,7 +297,7 @@ namingpaper rename paper.pdf -p gemini
 
 ```bash
 # Clone and setup
-git clone https://github.com/your-username/namingpaper.git
+git clone https://github.com/DanTsai0903/namingpaper.git
 cd namingpaper
 uv sync --extra dev
 
