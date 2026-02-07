@@ -17,7 +17,7 @@ class PDFReadError(Exception):
 
 def extract_pdf_content(
     pdf_path: Path,
-    max_pages: int = 3,
+    max_pages: int = 2,
     extract_image: bool = True,
 ) -> PDFContent:
     """Extract text and optionally first page image from a PDF.
@@ -80,7 +80,7 @@ def extract_pdf_content(
     )
 
 
-def extract_text_only(pdf_path: Path, max_pages: int = 3) -> str:
+def extract_text_only(pdf_path: Path, max_pages: int = 2) -> str:
     """Extract only text from a PDF (faster, no image processing)."""
     content = extract_pdf_content(pdf_path, max_pages=max_pages, extract_image=False)
     return content.text

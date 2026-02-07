@@ -38,9 +38,9 @@ uv sync
 
 ## Quick Start
 
+The default provider is Ollama (local, no API key needed). Install it from [ollama.com](https://ollama.com), then pull the required models:
+
 ```bash
-# Default uses Ollama (local, no API key needed)
-# Make sure Ollama is running with the required models
 ollama pull deepseek-ocr
 ollama pull llama3.1:8b
 
@@ -266,14 +266,12 @@ max_filename_length = 200
 Local LLM, no API key needed. Just have Ollama running.
 
 ```bash
-# Pull a vision model
-ollama pull llama3.2-vision
+# Pull the default models
+ollama pull deepseek-ocr      # OCR model (extracts text from images)
+ollama pull llama3.1:8b        # Text model (parses metadata)
 
 # Use it (default provider)
 namingpaper rename paper.pdf
-
-# Or specify a different model
-NAMINGPAPER_MODEL_NAME=deepseek-ocr namingpaper rename paper.pdf
 ```
 
 ### Claude (included by default)
