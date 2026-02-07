@@ -49,3 +49,6 @@ Thumbs.db
 
 # Config with secrets
 .namingpaper/
+
+# Claude Code local settings
+.claude/settings.local.json
