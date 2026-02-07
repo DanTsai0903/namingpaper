@@ -101,6 +101,8 @@ async def process_single_file(
 async def process_batch(
     files: list[Path],
     provider_name: str | None = None,
+    model_name: str | None = None,
+    ocr_model: str | None = None,
     template: str | None = None,
     output_dir: Path | None = None,
     parallel: int = 1,
@@ -111,6 +113,8 @@ async def process_batch(
     Args:
         files: List of PDF file paths
         provider_name: AI provider name
+        model_name: Override the default model for the provider
+        ocr_model: Override the Ollama OCR model
         template: Optional template for filename formatting
         output_dir: Optional output directory
         parallel: Number of concurrent extractions (1 = sequential)
@@ -119,7 +123,7 @@ async def process_batch(
     Returns:
         List of BatchItem results
     """
-    provider = get_provider(provider_name)
+    provider = get_provider(provider_name, model_name=model_name, ocr_model=ocr_model)
     results: list[BatchItem] = []
     total = len(files)
 
@@ -254,6 +258,8 @@ def execute_batch(
 def process_batch_sync(
     files: list[Path],
     provider_name: str | None = None,
+    model_name: str | None = None,
+    ocr_model: str | None = None,
     template: str | None = None,
     output_dir: Path | None = None,
     parallel: int = 1,
@@ -264,6 +270,8 @@ def process_batch_sync(
         process_batch(
             files,
             provider_name=provider_name,
+            model_name=model_name,
+            ocr_model=ocr_model,
             template=template,
             output_dir=output_dir,
             parallel=parallel,

@@ -93,6 +93,8 @@ Options:
   -x, --execute              Actually rename (default is dry-run)
   -y, --yes                  Skip confirmation prompt
   -p, --provider TEXT        AI provider (claude, openai, gemini, ollama)
+  -m, --model TEXT           Override the default model for the provider
+  --ocr-model TEXT           Override Ollama OCR model (default: deepseek-ocr)
   -o, --output-dir DIR       Copy to directory (keeps original)
   -c, --collision STRATEGY   Handle collisions: skip, increment, overwrite
 ```
@@ -110,6 +112,8 @@ Options:
   -r, --recursive            Scan subdirectories
   -f, --filter PATTERN       Only process files matching pattern (e.g., '2023*')
   -p, --provider TEXT        AI provider (claude, openai, gemini, ollama)
+  -m, --model TEXT           Override the default model for the provider
+  --ocr-model TEXT           Override Ollama OCR model (default: deepseek-ocr)
   -t, --template TEXT        Filename template or preset name
   -o, --output-dir DIR       Copy to directory (keeps originals)
   -c, --collision STRATEGY   Handle collisions: skip, increment, overwrite
@@ -236,7 +240,8 @@ namingpaper batch ~/papers -t "{authors}, ({year}, {journal_full}), {title}"
 | `NAMINGPAPER_OPENAI_API_KEY` | OpenAI API key |
 | `NAMINGPAPER_GEMINI_API_KEY` | Google Gemini API key |
 | `NAMINGPAPER_AI_PROVIDER` | Provider: `ollama` (default), `claude`, `openai`, `gemini` |
-| `NAMINGPAPER_MODEL_NAME` | Override default model for provider |
+| `NAMINGPAPER_MODEL_NAME` | Override default text model for provider |
+| `NAMINGPAPER_OLLAMA_OCR_MODEL` | Override Ollama OCR model (default: `deepseek-ocr`) |
 | `NAMINGPAPER_OLLAMA_BASE_URL` | Ollama API URL (default: `http://localhost:11434`) |
 | `NAMINGPAPER_MAX_AUTHORS` | Max authors before "et al" (default: 3) |
 | `NAMINGPAPER_MAX_FILENAME_LENGTH` | Max filename length (default: 200) |
@@ -249,6 +254,8 @@ Create `~/.namingpaper/config.toml`:
 # Default provider (ollama requires no API key)
 ai_provider = "ollama"
 ollama_base_url = "http://localhost:11434"
+# ollama_ocr_model = "deepseek-ocr"    # Override OCR model
+# model_name = "llama3.1:8b"           # Override text model
 
 # Or use cloud providers
 # ai_provider = "claude"
@@ -272,6 +279,12 @@ ollama pull llama3.1:8b        # Text model (parses metadata)
 
 # Use it (default provider)
 namingpaper rename paper.pdf
+
+# Use a different text model
+namingpaper rename paper.pdf -m gemma2:9b
+
+# Use a different OCR model
+namingpaper rename paper.pdf --ocr-model llava
 ```
 
 ### Claude (included by default)
@@ -279,6 +292,9 @@ namingpaper rename paper.pdf
 ```bash
 export NAMINGPAPER_ANTHROPIC_API_KEY=sk-ant-...
 namingpaper rename paper.pdf -p claude
+
+# Use a specific Claude model
+namingpaper rename paper.pdf -p claude -m claude-haiku-4-20250514
 ```
 
 ### OpenAI
@@ -287,6 +303,9 @@ namingpaper rename paper.pdf -p claude
 uv add "namingpaper[openai]"
 export NAMINGPAPER_OPENAI_API_KEY=sk-...
 namingpaper rename paper.pdf -p openai
+
+# Use a specific OpenAI model
+namingpaper rename paper.pdf -p openai -m gpt-4o-mini
 ```
 
 ### Gemini
@@ -295,6 +314,9 @@ namingpaper rename paper.pdf -p openai
 uv add "namingpaper[gemini]"
 export NAMINGPAPER_GEMINI_API_KEY=...
 namingpaper rename paper.pdf -p gemini
+
+# Use a specific Gemini model
+namingpaper rename paper.pdf -p gemini -m gemini-2.0-flash
 ```
 
 ## Development

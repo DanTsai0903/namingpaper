@@ -61,16 +61,28 @@ class OpenAIProvider(AIProvider):
             )
 
         # Call OpenAI API
-        response = self.client.chat.completions.create(
-            model=self.model,
-            max_tokens=1024,
-            messages=[
-                {
-                    "role": "user",
-                    "content": message_content,
-                },
-            ],
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                max_tokens=1024,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": message_content,
+                    },
+                ],
+            )
+        except Exception as e:
+            err = str(e).lower()
+            if "model" in err and ("not found" in err or "does not exist" in err):
+                raise RuntimeError(
+                    f"Model '{self.model}' not found. Check available models at https://platform.openai.com/docs/models"
+                ) from e
+            if "auth" in err or "api key" in err:
+                raise RuntimeError(
+                    "Invalid OpenAI API key. Check your NAMINGPAPER_OPENAI_API_KEY."
+                ) from e
+            raise
 
         # Parse response
         response_text = response.choices[0].message.content

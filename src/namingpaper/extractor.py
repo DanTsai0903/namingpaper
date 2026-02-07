@@ -14,6 +14,8 @@ async def extract_metadata(
     pdf_path: Path,
     provider: AIProvider | None = None,
     provider_name: str | None = None,
+    model_name: str | None = None,
+    ocr_model: str | None = None,
 ) -> PaperMetadata:
     """Extract metadata from a PDF file.
 
@@ -21,13 +23,15 @@ async def extract_metadata(
         pdf_path: Path to the PDF file
         provider: Pre-initialized AI provider (optional)
         provider_name: Name of provider to use if provider not given
+        model_name: Override the default model for the provider
+        ocr_model: Override the Ollama OCR model
 
     Returns:
         Extracted paper metadata
     """
     # Get provider
     if provider is None:
-        provider = get_provider(provider_name)
+        provider = get_provider(provider_name, model_name=model_name, ocr_model=ocr_model)
 
     # Extract PDF content
     content = extract_pdf_content(pdf_path)
@@ -42,6 +46,8 @@ async def plan_rename(
     pdf_path: Path,
     provider: AIProvider | None = None,
     provider_name: str | None = None,
+    model_name: str | None = None,
+    ocr_model: str | None = None,
 ) -> RenameOperation:
     """Plan a rename operation for a PDF file.
 
@@ -49,11 +55,13 @@ async def plan_rename(
         pdf_path: Path to the PDF file
         provider: Pre-initialized AI provider (optional)
         provider_name: Name of provider to use if provider not given
+        model_name: Override the default model for the provider
+        ocr_model: Override the Ollama OCR model
 
     Returns:
         Planned rename operation with metadata
     """
-    metadata = await extract_metadata(pdf_path, provider, provider_name)
+    metadata = await extract_metadata(pdf_path, provider, provider_name, model_name=model_name, ocr_model=ocr_model)
     destination = build_destination(pdf_path, metadata)
 
     return RenameOperation(
@@ -67,6 +75,8 @@ def plan_rename_sync(
     pdf_path: Path,
     provider: AIProvider | None = None,
     provider_name: str | None = None,
+    model_name: str | None = None,
+    ocr_model: str | None = None,
 ) -> RenameOperation:
     """Synchronous wrapper for plan_rename."""
-    return asyncio.run(plan_rename(pdf_path, provider, provider_name))
+    return asyncio.run(plan_rename(pdf_path, provider, provider_name, model_name=model_name, ocr_model=ocr_model))

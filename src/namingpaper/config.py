@@ -38,6 +38,9 @@ class Settings(BaseSettings):
         default="http://localhost:11434",
         description="Base URL for Ollama API",
     )
+    ollama_ocr_model: str | None = Field(
+        default=None, description="Override OCR model for Ollama (default: deepseek-ocr)"
+    )
 
     # Filename formatting
     max_authors: int = Field(

@@ -52,20 +52,29 @@ class ClaudeProvider(AIProvider):
         )
 
         # Call Claude API (sync, but wrapped for async interface)
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=1024,
-            messages=[
-                {
-                    "role": "user",
-                    "content": message_content,
-                },
-                {
-                    "role": "user",
-                    "content": EXTRACTION_PROMPT,
-                },
-            ],
-        )
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=1024,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": message_content,
+                    },
+                    {
+                        "role": "user",
+                        "content": EXTRACTION_PROMPT,
+                    },
+                ],
+            )
+        except anthropic.NotFoundError:
+            raise RuntimeError(
+                f"Model '{self.model}' not found. Check available models at https://docs.anthropic.com/en/docs/about-claude/models"
+            )
+        except anthropic.AuthenticationError:
+            raise RuntimeError(
+                "Invalid Anthropic API key. Check your NAMINGPAPER_ANTHROPIC_API_KEY."
+            )
 
         # Parse response
         response_text = response.content[0].text

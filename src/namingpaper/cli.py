@@ -62,6 +62,21 @@ def rename(
             help="AI provider to use (claude, openai, gemini, ollama)",
         ),
     ] = None,
+    model: Annotated[
+        str | None,
+        typer.Option(
+            "--model",
+            "-m",
+            help="Override the default model for the provider",
+        ),
+    ] = None,
+    ocr_model: Annotated[
+        str | None,
+        typer.Option(
+            "--ocr-model",
+            help="Override Ollama OCR model (default: deepseek-ocr)",
+        ),
+    ] = None,
     output_dir: Annotated[
         Path | None,
         typer.Option(
@@ -95,7 +110,7 @@ def rename(
     # Extract metadata and plan rename
     with console.status("[bold blue]Extracting metadata..."):
         try:
-            operation = plan_rename_sync(pdf_path, provider_name=provider)
+            operation = plan_rename_sync(pdf_path, provider_name=provider, model_name=model, ocr_model=ocr_model)
         except ValueError as e:
             console.print(f"[red]Error:[/red] {e}")
             raise typer.Exit(1)
@@ -214,6 +229,21 @@ def batch(
             help="AI provider to use (claude, openai, gemini, ollama)",
         ),
     ] = None,
+    model: Annotated[
+        str | None,
+        typer.Option(
+            "--model",
+            "-m",
+            help="Override the default model for the provider",
+        ),
+    ] = None,
+    ocr_model: Annotated[
+        str | None,
+        typer.Option(
+            "--ocr-model",
+            help="Override Ollama OCR model (default: deepseek-ocr)",
+        ),
+    ] = None,
     template: Annotated[
         str | None,
         typer.Option(
@@ -317,6 +347,8 @@ def batch(
             items = process_batch_sync(
                 pdf_files,
                 provider_name=provider,
+                model_name=model,
+                ocr_model=ocr_model,
                 template=template,
                 output_dir=output_dir,
                 parallel=parallel,
@@ -495,6 +527,10 @@ def config(
             else "[dim]not set[/dim]",
         )
         table.add_row("Ollama URL", settings.ollama_base_url)
+        table.add_row(
+            "Ollama OCR Model",
+            settings.ollama_ocr_model or "[dim]default (deepseek-ocr)[/dim]",
+        )
         table.add_row("Max Authors", str(settings.max_authors))
         table.add_row("Max Filename Length", str(settings.max_filename_length))
 

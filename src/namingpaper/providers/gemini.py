@@ -47,7 +47,19 @@ class GeminiProvider(AIProvider):
         parts.append(f"Paper text:\n\n{text}\n\n{EXTRACTION_PROMPT}")
 
         # Call Gemini API
-        response = self.model.generate_content(parts)
+        try:
+            response = self.model.generate_content(parts)
+        except Exception as e:
+            err = str(e).lower()
+            if "not found" in err or "404" in err or "does not exist" in err:
+                raise RuntimeError(
+                    f"Model not found. Check available models at https://ai.google.dev/gemini-api/docs/models"
+                ) from e
+            if "api key" in err or "permission" in err:
+                raise RuntimeError(
+                    "Invalid Gemini API key. Check your NAMINGPAPER_GEMINI_API_KEY."
+                ) from e
+            raise
 
         # Parse response
         response_text = response.text

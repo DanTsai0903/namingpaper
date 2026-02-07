@@ -8,12 +8,14 @@ if TYPE_CHECKING:
     from namingpaper.providers.base import AIProvider
 
 
-def get_provider(provider_name: str | None = None) -> "AIProvider":
+def get_provider(provider_name: str | None = None, model_name: str | None = None, ocr_model: str | None = None) -> "AIProvider":
     """Get an AI provider instance by name.
 
     Args:
         provider_name: Provider name ("claude", "openai", "gemini", "ollama").
                       If None, uses the configured default.
+        model_name: Override the default model for the provider.
+        ocr_model: Override the Ollama OCR model.
 
     Returns:
         An initialized AIProvider instance.
@@ -23,6 +25,7 @@ def get_provider(provider_name: str | None = None) -> "AIProvider":
     """
     settings = get_settings()
     name = provider_name or settings.ai_provider
+    model = model_name or settings.model_name
 
     match name:
         case "claude":
@@ -34,7 +37,7 @@ def get_provider(provider_name: str | None = None) -> "AIProvider":
                 )
             return ClaudeProvider(
                 api_key=settings.anthropic_api_key,
-                model=settings.model_name,
+                model=model,
             )
         case "openai":
             try:
@@ -49,7 +52,7 @@ def get_provider(provider_name: str | None = None) -> "AIProvider":
                 )
             return OpenAIProvider(
                 api_key=settings.openai_api_key,
-                model=settings.model_name,
+                model=model,
             )
         case "gemini":
             try:
@@ -64,14 +67,15 @@ def get_provider(provider_name: str | None = None) -> "AIProvider":
                 )
             return GeminiProvider(
                 api_key=settings.gemini_api_key,
-                model=settings.model_name,
+                model=model,
             )
         case "ollama":
             from namingpaper.providers.ollama import OllamaProvider
 
             return OllamaProvider(
-                model=settings.model_name,
+                model=model,
                 base_url=settings.ollama_base_url,
+                ocr_model=ocr_model or settings.ollama_ocr_model,
             )
         case _:
             raise ValueError(f"Unknown provider: {name}")

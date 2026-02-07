@@ -122,6 +122,11 @@ class OllamaProvider(AIProvider):
                 )
                 response.raise_for_status()
         except httpx.HTTPStatusError as e:
+            model = payload.get("model", "unknown")
+            if e.response.status_code == 404:
+                raise RuntimeError(
+                    f"Model '{model}' not found. Pull it first with: ollama pull {model}"
+                ) from e
             raise RuntimeError(
                 f"Ollama API error: {e.response.status_code} - {e.response.text}"
             ) from e
