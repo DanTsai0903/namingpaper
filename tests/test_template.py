@@ -76,7 +76,7 @@ class TestBuildFilenameFromTemplate:
     def test_default_template(self, metadata: PaperMetadata) -> None:
         """Should format using default template."""
         result = build_filename_from_template(metadata, "default")
-        assert "Fama, French" in result
+        assert "Fama and French" in result
         assert "1993" in result
         assert "JFE" in result
         assert result.endswith(".pdf")
@@ -84,7 +84,7 @@ class TestBuildFilenameFromTemplate:
     def test_compact_template(self, metadata: PaperMetadata) -> None:
         """Should format using compact template."""
         result = build_filename_from_template(metadata, "compact")
-        assert "Fama, French" in result
+        assert "Fama and French" in result
         assert "(1993)" in result
         assert "JFE" not in result  # compact doesn't include journal
         assert result.endswith(".pdf")

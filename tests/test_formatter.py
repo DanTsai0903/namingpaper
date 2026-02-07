@@ -34,10 +34,10 @@ class TestFormatAuthors:
         assert format_authors(["Smith"]) == "Smith"
 
     def test_two_authors(self):
-        assert format_authors(["Smith", "Jones"]) == "Smith, Jones"
+        assert format_authors(["Smith", "Jones"]) == "Smith and Jones"
 
     def test_three_authors(self):
-        assert format_authors(["Smith", "Jones", "Brown"]) == "Smith, Jones, Brown"
+        assert format_authors(["Smith", "Jones", "Brown"]) == "Smith, Jones, and Brown"
 
     def test_four_authors_uses_et_al(self):
         assert format_authors(["Smith", "Jones", "Brown", "Davis"]) == "Smith et al"
@@ -73,7 +73,7 @@ class TestFormatTitle:
 class TestBuildFilename:
     def test_standard_format(self, sample_metadata: PaperMetadata):
         filename = build_filename(sample_metadata)
-        assert filename == "Fama, French, (1993, JFE), Common risk factors in the returns....pdf"
+        assert filename == "Fama and French, (1993, JFE), Common risk factors in the returns....pdf"
 
     def test_many_authors_uses_et_al(self, sample_metadata_many_authors: PaperMetadata):
         filename = build_filename(sample_metadata_many_authors)

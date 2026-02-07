@@ -28,17 +28,21 @@ def format_authors(authors: list[str], max_authors: int = 3) -> str:
 
     Examples:
         ["Smith"] -> "Smith"
-        ["Smith", "Jones"] -> "Smith, Jones"
-        ["Smith", "Jones", "Brown"] -> "Smith, Jones, Brown"
+        ["Smith", "Jones"] -> "Smith and Jones"
+        ["Smith", "Jones", "Brown"] -> "Smith, Jones, and Brown"
         ["Smith", "Jones", "Brown", "Davis"] -> "Smith et al"
     """
     if not authors:
         return "Unknown"
 
-    if len(authors) <= max_authors:
-        return ", ".join(authors)
-    else:
+    if len(authors) > max_authors:
         return f"{authors[0]} et al"
+    elif len(authors) == 1:
+        return authors[0]
+    elif len(authors) == 2:
+        return f"{authors[0]} and {authors[1]}"
+    else:
+        return ", ".join(authors[:-1]) + f", and {authors[-1]}"
 
 
 def format_journal(journal: str, journal_abbrev: str | None) -> str:
