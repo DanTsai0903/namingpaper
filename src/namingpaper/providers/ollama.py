@@ -68,6 +68,7 @@ class OllamaProvider(AIProvider):
                 }
             ],
             "stream": False,
+            "keep_alive": "30s",  # Unload model after 30s of inactivity
         }
 
         result = await self._call_ollama("/api/chat", payload)
@@ -85,6 +86,7 @@ class OllamaProvider(AIProvider):
             "prompt": prompt,
             "stream": False,
             "format": "json",
+            "keep_alive": "30s",  # Unload model after 30s of inactivity
         }
 
         result = await self._call_ollama("/api/generate", payload)
