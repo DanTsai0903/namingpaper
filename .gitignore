@@ -49,6 +49,3 @@ Thumbs.db
 
 # Config with secrets
 .namingpaper/
-
-# uv
-uv.lock
