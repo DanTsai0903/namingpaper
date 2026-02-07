@@ -1,0 +1,38 @@
+[project]
+name = "namingpaper"
+version = "0.1.0"
+description = "CLI tool to rename academic papers using AI-extracted metadata"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pdfplumber>=0.10.0",
+    "pdf2image>=1.16.0",
+    "Pillow>=10.0.0",
+    "anthropic>=0.30.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+gemini = ["google-generativeai>=0.5.0"]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
+
+[project.scripts]
+namingpaper = "namingpaper.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/namingpaper"]
+
+[tool.hatch.build.targets.editable]
+packages = ["src/namingpaper"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
