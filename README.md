@@ -27,6 +27,9 @@ uv tool install namingpaper
 uv tool install "namingpaper[openai]"    # OpenAI support
 uv tool install "namingpaper[gemini]"    # Gemini support
 
+# Update to latest version
+uv tool upgrade namingpaper
+
 # Or install from source
 git clone https://github.com/DanTsai0903/namingpaper.git
 cd namingpaper
