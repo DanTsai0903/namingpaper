@@ -11,7 +11,7 @@ from rich.table import Table
 
 from namingpaper.config import get_settings
 from namingpaper.extractor import plan_rename_sync
-from namingpaper.models import BatchItem, BatchItemStatus
+from namingpaper.models import BatchItem, BatchItemStatus, LowConfidenceError
 from namingpaper.renamer import (
     CollisionStrategy,
     execute_rename,
@@ -111,6 +111,11 @@ def rename(
     with console.status("[bold blue]Extracting metadata..."):
         try:
             operation = plan_rename_sync(pdf_path, provider_name=provider, model_name=model, ocr_model=ocr_model)
+        except LowConfidenceError as e:
+            console.print(
+                f"[yellow]Skipped:[/yellow] {e}"
+            )
+            raise typer.Exit(0)
         except ValueError as e:
             console.print(f"[red]Error:[/red] {e}")
             raise typer.Exit(1)

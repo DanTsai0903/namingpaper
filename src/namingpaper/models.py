@@ -21,6 +21,18 @@ class PaperMetadata(BaseModel):
     )
 
 
+class LowConfidenceError(Exception):
+    """Raised when extraction confidence is below the minimum threshold."""
+
+    def __init__(self, confidence: float, threshold: float):
+        self.confidence = confidence
+        self.threshold = threshold
+        super().__init__(
+            f"Confidence {confidence:.0%} is below threshold {threshold:.0%}. "
+            "The document may not be an academic paper."
+        )
+
+
 class PDFContent(BaseModel):
     """Content extracted from a PDF file."""
 

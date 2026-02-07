@@ -15,6 +15,8 @@ Return a JSON object with these fields:
 - title: paper title (just the main title, not subtitle)
 - confidence: your confidence in the extraction from 0.0 to 1.0
 
+If this document is NOT an academic paper (e.g., invoice, manual, slides, resume, form), still return valid JSON but set confidence to 0.0.
+
 Common journal abbreviations:
 - Journal of Finance -> JF
 - Journal of Financial Economics -> JFE

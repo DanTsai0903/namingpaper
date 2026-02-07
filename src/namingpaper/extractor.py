@@ -3,7 +3,8 @@
 import asyncio
 from pathlib import Path
 
-from namingpaper.models import PDFContent, PaperMetadata, RenameOperation
+from namingpaper.config import get_settings
+from namingpaper.models import LowConfidenceError, PDFContent, PaperMetadata, RenameOperation
 from namingpaper.pdf_reader import extract_pdf_content
 from namingpaper.formatter import build_destination
 from namingpaper.providers import get_provider
@@ -38,6 +39,11 @@ async def extract_metadata(
 
     # Extract metadata using AI
     metadata = await provider.extract_metadata(content)
+
+    # Check confidence threshold
+    settings = get_settings()
+    if metadata.confidence < settings.min_confidence:
+        raise LowConfidenceError(metadata.confidence, settings.min_confidence)
 
     return metadata
 

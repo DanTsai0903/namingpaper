@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
 
 from namingpaper.models import (
+    LowConfidenceError,
     PaperMetadata,
     BatchItem,
     BatchItemStatus,
@@ -209,3 +210,16 @@ class TestProcessSingleFile:
             item = await process_single_file(pdf_path, mock_provider, output_dir=output_dir)
 
         assert item.destination.parent == output_dir
+
+    async def test_low_confidence_skipped(self, tmp_path: Path, mock_provider) -> None:
+        """Should set SKIPPED status when confidence is below threshold."""
+        pdf_path = tmp_path / "test.pdf"
+        pdf_path.touch()
+
+        with patch("namingpaper.batch.extract_metadata", new_callable=AsyncMock) as mock_extract:
+            mock_extract.side_effect = LowConfidenceError(0.1, 0.5)
+
+            item = await process_single_file(pdf_path, mock_provider)
+
+        assert item.status == BatchItemStatus.SKIPPED
+        assert "not be an academic paper" in item.error

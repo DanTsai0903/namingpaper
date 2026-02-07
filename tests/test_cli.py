@@ -7,7 +7,7 @@ import pytest
 from typer.testing import CliRunner
 
 from namingpaper.cli import app
-from namingpaper.models import PaperMetadata, RenameOperation
+from namingpaper.models import LowConfidenceError, PaperMetadata, RenameOperation
 
 
 runner = CliRunner()
@@ -66,6 +66,21 @@ class TestRenameCommand:
         assert result.exit_code != 0
 
 
+    def test_low_confidence_skipped(self, tmp_path: Path):
+        source = tmp_path / "invoice.pdf"
+        source.write_text("PDF content")
+
+        with patch(
+            "namingpaper.cli.plan_rename_sync",
+            side_effect=LowConfidenceError(0.1, 0.5),
+        ):
+            result = runner.invoke(app, ["rename", str(source)])
+
+        assert result.exit_code == 0
+        assert "Skipped" in result.output
+        assert "academic paper" in result.output
+
+
 class TestConfigCommand:
     def test_config_show(self):
         with patch("namingpaper.cli.get_settings") as mock_settings:
@@ -75,6 +90,7 @@ class TestConfigCommand:
                 openai_api_key=None,
                 gemini_api_key=None,
                 ollama_base_url="http://localhost:11434",
+                ollama_ocr_model=None,
                 max_authors=3,
                 max_filename_length=200,
             )

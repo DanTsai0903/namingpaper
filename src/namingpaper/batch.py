@@ -9,6 +9,7 @@ from namingpaper.models import (
     BatchItem,
     BatchItemStatus,
     BatchResult,
+    LowConfidenceError,
     PaperMetadata,
     RenameOperation,
 )
@@ -91,6 +92,9 @@ async def process_single_file(
         else:
             item.status = BatchItemStatus.OK
 
+    except LowConfidenceError as e:
+        item.status = BatchItemStatus.SKIPPED
+        item.error = str(e)
     except Exception as e:
         item.status = BatchItemStatus.ERROR
         item.error = str(e)

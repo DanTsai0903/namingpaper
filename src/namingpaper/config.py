@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     max_text_chars: int = Field(
         default=8000, description="Max characters of text to send to AI"
     )
+    min_confidence: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Minimum confidence threshold; documents below this are skipped",
+    )
 
     # Ollama settings
     ollama_base_url: str = Field(
