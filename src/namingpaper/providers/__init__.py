@@ -8,7 +8,12 @@ if TYPE_CHECKING:
     from namingpaper.providers.base import AIProvider
 
 
-def get_provider(provider_name: str | None = None, model_name: str | None = None, ocr_model: str | None = None) -> "AIProvider":
+def get_provider(
+    provider_name: str | None = None,
+    model_name: str | None = None,
+    ocr_model: str | None = None,
+    keep_alive: str | None = None,
+) -> "AIProvider":
     """Get an AI provider instance by name.
 
     Args:
@@ -16,6 +21,7 @@ def get_provider(provider_name: str | None = None, model_name: str | None = None
                       If None, uses the configured default.
         model_name: Override the default model for the provider.
         ocr_model: Override the Ollama OCR model.
+        keep_alive: Ollama keep_alive duration (e.g., "60s", "0s"). Only applies to Ollama.
 
     Returns:
         An initialized AIProvider instance.
@@ -76,6 +82,7 @@ def get_provider(provider_name: str | None = None, model_name: str | None = None
                 model=model,
                 base_url=settings.ollama_base_url,
                 ocr_model=ocr_model or settings.ollama_ocr_model,
+                keep_alive=keep_alive or "0s",  # Default to immediate unload
             )
         case _:
             raise ValueError(f"Unknown provider: {name}")

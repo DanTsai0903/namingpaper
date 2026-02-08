@@ -110,7 +110,7 @@ def rename(
     # Extract metadata and plan rename
     with console.status("[bold blue]Extracting metadata..."):
         try:
-            operation = plan_rename_sync(pdf_path, provider_name=provider, model_name=model, ocr_model=ocr_model)
+            operation = plan_rename_sync(pdf_path, provider_name=provider, model_name=model, ocr_model=ocr_model, keep_alive="0s")
         except LowConfidenceError as e:
             console.print(
                 f"[yellow]Skipped:[/yellow] {e}"

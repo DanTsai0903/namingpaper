@@ -28,11 +28,13 @@ class OllamaProvider(AIProvider):
         base_url: str | None = None,
         ocr_model: str | None = None,
         text_model: str | None = None,
+        keep_alive: str = "0s",
     ):
         # For backwards compatibility, model param sets text_model
         self.ocr_model = ocr_model or self.DEFAULT_OCR_MODEL
         self.text_model = text_model or model or self.DEFAULT_TEXT_MODEL
         self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip("/")
+        self.keep_alive = keep_alive
 
     async def extract_metadata(self, content: PDFContent) -> PaperMetadata:
         """Extract metadata using two-stage Ollama pipeline.
@@ -68,7 +70,7 @@ class OllamaProvider(AIProvider):
                 }
             ],
             "stream": False,
-            "keep_alive": "30s",  # Unload model after 30s of inactivity
+            "keep_alive": self.keep_alive,
         }
 
         result = await self._call_ollama("/api/chat", payload)
@@ -86,7 +88,7 @@ class OllamaProvider(AIProvider):
             "prompt": prompt,
             "stream": False,
             "format": "json",
-            "keep_alive": "30s",  # Unload model after 30s of inactivity
+            "keep_alive": self.keep_alive,
         }
 
         result = await self._call_ollama("/api/generate", payload)

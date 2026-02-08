@@ -4,7 +4,7 @@ A CLI tool that renames academic PDF papers using AI-extracted metadata.
 
 **Before:** `1-s2.0-S0304405X13000044-main.pdf`
 
-**After:** `Fama, French, (1993, JFE), Common risk factors in the returns....pdf`
+**After:** `Fama and French, (1993, JFE), Common risk factors in the returns....pdf`
 
 ## Features
 
@@ -201,10 +201,10 @@ Templates control how the output filename is formatted.
 
 | Name | Pattern | Example |
 |------|---------|---------|
-| `default` | `{authors}, ({year}, {journal}), {title}` | `Fama, French, (1993, JFE), Common risk....pdf` |
-| `compact` | `{authors} ({year}) {title}` | `Fama, French (1993) Common risk....pdf` |
-| `full` | `{authors}, ({year}, {journal_full}), {title}` | `Fama, French, (1993, Journal of Financial Economics), Common....pdf` |
-| `simple` | `{authors}_{year}_{title}` | `Fama, French_1993_Common risk....pdf` |
+| `default` | `{authors}, ({year}, {journal}), {title}` | `Fama and French, (1993, JFE), Common risk....pdf` |
+| `compact` | `{authors} ({year}) {title}` | `Fama and French (1993) Common risk....pdf` |
+| `full` | `{authors}, ({year}, {journal_full}), {title}` | `Fama and French, (1993, Journal of Financial Economics), Common....pdf` |
+| `simple` | `{authors}_{year}_{title}` | `Fama and French_1993_Common risk....pdf` |
 
 ### Template Placeholders
 
