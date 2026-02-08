@@ -585,6 +585,11 @@ openai = [
     { name = "openai" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "pytest-asyncio" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = ">=0.30.0" },
@@ -601,6 +606,9 @@ requires-dist = [
     { name = "typer", specifier = ">=0.9.0" },
 ]
 provides-extras = ["openai", "gemini", "dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest-asyncio", specifier = ">=1.3.0" }]
 
 [[package]]
 name = "openai"

@@ -298,6 +298,8 @@ def batch(
 
     Template placeholders:
       {authors}        - Author surnames
+      {authors_full}   - Author full names
+      {authors_abbrev} - Surname with initials
       {year}           - Publication year
       {journal}        - Journal abbreviation
       {journal_full}   - Full journal name

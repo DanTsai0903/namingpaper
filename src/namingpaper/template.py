@@ -6,6 +6,8 @@ from typing import Callable
 from namingpaper.models import PaperMetadata
 from namingpaper.formatter import (
     format_authors,
+    format_authors_abbrev,
+    format_authors_full,
     format_journal,
     format_title,
     sanitize_filename,
@@ -42,7 +44,8 @@ def validate_template(template: str) -> tuple[bool, str | None]:
         Tuple of (is_valid, error_message)
     """
     valid_placeholders = {
-        "authors", "year", "journal", "journal_abbrev",
+        "authors", "authors_full", "authors_abbrev",
+        "year", "journal", "journal_abbrev",
         "journal_full", "title"
     }
 
@@ -68,7 +71,9 @@ def build_filename_from_template(
     """Build filename from metadata using a template.
 
     Template placeholders:
-        {authors} - Formatted author list (respects max_authors)
+        {authors} - Author surnames (respects max_authors)
+        {authors_full} - Author full names (e.g., "Eugene F. Fama and Kenneth R. French")
+        {authors_abbrev} - Surname with initials (e.g., "Fama, E. F. and French, K. R.")
         {year} - Publication year
         {journal} - Journal abbreviation (or full name if no abbrev)
         {journal_abbrev} - Journal abbreviation only (empty if none)
@@ -94,6 +99,8 @@ def build_filename_from_template(
     # Build replacement values
     replacements: dict[str, str] = {
         "authors": format_authors(metadata.authors, max_authors),
+        "authors_full": format_authors_full(metadata.authors_full, max_authors),
+        "authors_abbrev": format_authors_abbrev(metadata.authors_full, max_authors),
         "year": str(metadata.year),
         "journal": format_journal(metadata.journal, metadata.journal_abbrev),
         "journal_abbrev": metadata.journal_abbrev or "",

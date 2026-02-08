@@ -9,6 +9,7 @@ EXTRACTION_PROMPT = """Extract metadata from this academic paper.
 
 Return a JSON object with these fields:
 - authors: list of author last names only (e.g., ["Fama", "French"])
+- authors_full: list of author full names (e.g., ["Eugene F. Fama", "Kenneth R. French"])
 - year: publication year as integer
 - journal: full journal name
 - journal_abbrev: common abbreviation if known (e.g., "JFE" for Journal of Financial Economics, "AER" for American Economic Review), or null

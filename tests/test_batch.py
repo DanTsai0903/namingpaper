@@ -155,7 +155,7 @@ class TestProcessSingleFile:
     ) -> None:
         """Should create BatchItem with OK status on success."""
         pdf_path = tmp_path / "test.pdf"
-        pdf_path.touch()
+        pdf_path.write_bytes(b"%PDF-1.4 fake content")
 
         with patch("namingpaper.batch.extract_metadata", new_callable=AsyncMock) as mock_extract:
             mock_extract.return_value = sample_metadata
@@ -170,7 +170,7 @@ class TestProcessSingleFile:
     async def test_extraction_error(self, tmp_path: Path, mock_provider) -> None:
         """Should set ERROR status when extraction fails."""
         pdf_path = tmp_path / "test.pdf"
-        pdf_path.touch()
+        pdf_path.write_bytes(b"%PDF-1.4 fake content")
 
         with patch("namingpaper.batch.extract_metadata", new_callable=AsyncMock) as mock_extract:
             mock_extract.side_effect = Exception("API error")
@@ -185,7 +185,7 @@ class TestProcessSingleFile:
     ) -> None:
         """Should detect collision with existing file."""
         pdf_path = tmp_path / "test.pdf"
-        pdf_path.touch()
+        pdf_path.write_bytes(b"%PDF-1.4 fake content")
 
         with patch("namingpaper.batch.extract_metadata", new_callable=AsyncMock) as mock_extract:
             mock_extract.return_value = sample_metadata
@@ -200,7 +200,7 @@ class TestProcessSingleFile:
         """Should use output_dir when specified."""
         pdf_path = tmp_path / "input" / "test.pdf"
         pdf_path.parent.mkdir()
-        pdf_path.touch()
+        pdf_path.write_bytes(b"%PDF-1.4 fake content")
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
@@ -214,7 +214,7 @@ class TestProcessSingleFile:
     async def test_low_confidence_skipped(self, tmp_path: Path, mock_provider) -> None:
         """Should set SKIPPED status when confidence is below threshold."""
         pdf_path = tmp_path / "test.pdf"
-        pdf_path.touch()
+        pdf_path.write_bytes(b"%PDF-1.4 fake content")
 
         with patch("namingpaper.batch.extract_metadata", new_callable=AsyncMock) as mock_extract:
             mock_extract.side_effect = LowConfidenceError(0.1, 0.5)

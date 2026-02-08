@@ -45,6 +45,63 @@ def format_authors(authors: list[str], max_authors: int = 3) -> str:
         return ", ".join(authors[:-1]) + f", and {authors[-1]}"
 
 
+def format_authors_full(authors_full: list[str], max_authors: int = 3) -> str:
+    """Format full author names for filename.
+
+    Examples:
+        ["Eugene F. Fama"] -> "Eugene F. Fama"
+        ["Eugene F. Fama", "Kenneth R. French"] -> "Eugene F. Fama and Kenneth R. French"
+    """
+    if not authors_full:
+        return "Unknown"
+
+    if len(authors_full) > max_authors:
+        return f"{authors_full[0]} et al"
+    elif len(authors_full) == 1:
+        return authors_full[0]
+    elif len(authors_full) == 2:
+        return f"{authors_full[0]} and {authors_full[1]}"
+    else:
+        return ", ".join(authors_full[:-1]) + f", and {authors_full[-1]}"
+
+
+def _abbreviate_name(full_name: str) -> str:
+    """Convert a full name to surname with initials.
+
+    Examples:
+        "Eugene F. Fama" -> "Fama, E. F."
+        "Kenneth R. French" -> "French, K. R."
+        "Fama" -> "Fama"
+    """
+    parts = full_name.strip().split()
+    if len(parts) <= 1:
+        return full_name
+    surname = parts[-1]
+    initials = " ".join(f"{p[0]}." for p in parts[:-1])
+    return f"{surname}, {initials}"
+
+
+def format_authors_abbrev(authors_full: list[str], max_authors: int = 3) -> str:
+    """Format authors as surname with initials.
+
+    Examples:
+        ["Eugene F. Fama", "Kenneth R. French"] -> "Fama, E. F. and French, K. R."
+    """
+    if not authors_full:
+        return "Unknown"
+
+    abbreviated = [_abbreviate_name(name) for name in authors_full]
+
+    if len(abbreviated) > max_authors:
+        return f"{abbreviated[0]} et al"
+    elif len(abbreviated) == 1:
+        return abbreviated[0]
+    elif len(abbreviated) == 2:
+        return f"{abbreviated[0]} and {abbreviated[1]}"
+    else:
+        return ", ".join(abbreviated[:-1]) + f", and {abbreviated[-1]}"
+
+
 def format_journal(journal: str, journal_abbrev: str | None) -> str:
     """Format journal for filename, preferring abbreviation."""
     return journal_abbrev or journal

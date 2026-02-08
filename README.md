@@ -208,14 +208,16 @@ Templates control how the output filename is formatted.
 
 ### Template Placeholders
 
-| Placeholder | Description |
-|-------------|-------------|
-| `{authors}` | Author surnames (comma-separated, "et al" if >3) |
-| `{year}` | Publication year |
-| `{journal}` | Journal abbreviation (or full name if no abbrev) |
-| `{journal_abbrev}` | Journal abbreviation only |
-| `{journal_full}` | Full journal name |
-| `{title}` | Paper title (truncated) |
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{authors}` | Author surnames (comma-separated, "et al" if >3) | `Fama and French` |
+| `{authors_full}` | Author full names | `Eugene F. Fama and Kenneth R. French` |
+| `{authors_abbrev}` | Surname with initials | `Fama, E. F. and French, K. R.` |
+| `{year}` | Publication year | `1993` |
+| `{journal}` | Journal abbreviation (or full name if no abbrev) | `JFE` |
+| `{journal_abbrev}` | Journal abbreviation only | `JFE` |
+| `{journal_full}` | Full journal name | `Journal of Financial Economics` |
+| `{title}` | Paper title (truncated) | `Common risk factors in the returns...` |
 
 ### Custom Templates
 

@@ -10,6 +10,9 @@ class PaperMetadata(BaseModel):
     """Metadata extracted from an academic paper."""
 
     authors: list[str] = Field(description="List of author last names")
+    authors_full: list[str] = Field(
+        default_factory=list, description="List of author full names"
+    )
     year: int = Field(description="Publication year")
     journal: str = Field(description="Full journal name")
     journal_abbrev: str | None = Field(
