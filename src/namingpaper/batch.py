@@ -69,6 +69,14 @@ async def process_single_file(
     item = BatchItem(source=pdf_path)
 
     try:
+        # Quick check: skip files that can't be opened
+        with open(pdf_path, "rb") as f:
+            header = f.read(5)
+        if header != b"%PDF-":
+            item.status = BatchItemStatus.SKIPPED
+            item.error = "Not a valid PDF file"
+            return item
+
         # Extract metadata
         metadata = await extract_metadata(pdf_path, provider=provider)
         item.metadata = metadata
@@ -95,6 +103,9 @@ async def process_single_file(
     except LowConfidenceError as e:
         item.status = BatchItemStatus.SKIPPED
         item.error = str(e)
+    except (OSError, PermissionError) as e:
+        item.status = BatchItemStatus.SKIPPED
+        item.error = f"Cannot open file: {e}"
     except Exception as e:
         item.status = BatchItemStatus.ERROR
         item.error = str(e)
@@ -127,7 +138,7 @@ async def process_batch(
     Returns:
         List of BatchItem results
     """
-    provider = get_provider(provider_name, model_name=model_name, ocr_model=ocr_model)
+    provider = get_provider(provider_name, model_name=model_name, ocr_model=ocr_model, keep_alive="60s")
     results: list[BatchItem] = []
     total = len(files)
 
