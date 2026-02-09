@@ -46,10 +46,9 @@ uv sync
 
 ## Quick Start
 
-The default provider is Ollama (local, no API key needed). Install it from [ollama.com](https://ollama.com), then pull the required models:
+The default provider is Ollama (local, no API key needed). Install it from [ollama.com](https://ollama.com), then pull the required model:
 
 ```bash
-ollama pull deepseek-ocr
 ollama pull llama3.1:8b
 
 # Preview the rename (dry run)
@@ -280,12 +279,14 @@ max_filename_length = 200
 
 ### Ollama (Default)
 
-Local LLM, no API key needed. Just have Ollama running.
+Local LLM, no API key needed. Just have Ollama running. Text is extracted from PDFs using PyMuPDF; the OCR model is only used as a fallback for scanned/image-only PDFs.
 
 ```bash
-# Pull the default models
-ollama pull deepseek-ocr      # OCR model (extracts text from images)
+# Pull the required model
 ollama pull llama3.1:8b        # Text model (parses metadata)
+
+# Optional: OCR fallback for scanned PDFs
+ollama pull deepseek-ocr
 
 # Use it (default provider)
 namingpaper rename paper.pdf
@@ -293,7 +294,7 @@ namingpaper rename paper.pdf
 # Use a different text model
 namingpaper rename paper.pdf -m gemma2:9b
 
-# Use a different OCR model
+# Use a different OCR model (for scanned PDFs)
 namingpaper rename paper.pdf --ocr-model llava
 ```
 

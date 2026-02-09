@@ -37,18 +37,19 @@ class OllamaProvider(AIProvider):
         self.keep_alive = keep_alive
 
     async def extract_metadata(self, content: PDFContent) -> PaperMetadata:
-        """Extract metadata using two-stage Ollama pipeline.
+        """Extract metadata using Ollama pipeline.
 
-        Stage 1: OCR model extracts text from PDF image
-        Stage 2: Text model parses metadata from extracted text
+        If text extraction already produced usable text, skip the slow OCR stage
+        and go straight to metadata parsing. Only fall back to OCR when text is
+        missing or too short to be useful.
         """
         settings = get_settings()
 
-        # Stage 1: Extract text from image using OCR model
-        if content.first_page_image:
+        if content.text and len(content.text.strip()) > 100:
+            combined_text = content.text
+        elif content.first_page_image:
             ocr_text = await self._ocr_extract(content.first_page_image)
-            # Combine OCR text with PDF text for better coverage
-            combined_text = f"=== OCR Text from First Page ===\n{ocr_text}\n\n=== PDF Text ===\n{content.text}"
+            combined_text = f"{ocr_text}\n\n{content.text}" if content.text else ocr_text
         else:
             combined_text = content.text
 

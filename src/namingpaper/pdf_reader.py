@@ -1,10 +1,8 @@
 """PDF content extraction."""
 
-import io
 from pathlib import Path
 
-import pdfplumber
-from PIL import Image
+import fitz  # PyMuPDF
 
 from namingpaper.models import PDFContent
 
@@ -37,33 +35,28 @@ def extract_pdf_content(
     first_page_image: bytes | None = None
 
     try:
-        with pdfplumber.open(pdf_path) as pdf:
-            if not pdf.pages:
-                raise PDFReadError(f"PDF has no pages: {pdf_path}")
+        doc = fitz.open(pdf_path)
+        if not doc.page_count:
+            raise PDFReadError(f"PDF has no pages: {pdf_path}")
 
-            # Extract text from first N pages
-            for i, page in enumerate(pdf.pages[:max_pages]):
-                try:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-                except Exception as e:
-                    # Continue with other pages if one fails
-                    pass
+        # Extract text from first N pages
+        for i in range(min(max_pages, doc.page_count)):
+            try:
+                page_text = doc[i].get_text()
+                if page_text:
+                    text_parts.append(page_text)
+            except Exception:
+                pass
 
-            # Extract first page as image
-            if extract_image and pdf.pages:
-                try:
-                    first_page = pdf.pages[0]
-                    # Convert to PIL Image
-                    img = first_page.to_image(resolution=150)
-                    # Save to bytes
-                    buffer = io.BytesIO()
-                    img.original.save(buffer, format="PNG")
-                    first_page_image = buffer.getvalue()
-                except Exception as e:
-                    # Image extraction failed, continue without image
-                    first_page_image = None
+        # Extract first page as image
+        if extract_image and doc.page_count:
+            try:
+                pix = doc[0].get_pixmap(dpi=150)
+                first_page_image = pix.tobytes("png")
+            except Exception:
+                first_page_image = None
+
+        doc.close()
 
     except PDFReadError:
         raise
@@ -81,6 +74,6 @@ def extract_pdf_content(
 
 
 def extract_text_only(pdf_path: Path, max_pages: int = 2) -> str:
-    """Extract only text from a PDF (faster, no image processing)."""
+    """Extract only text from a PDF (no image processing)."""
     content = extract_pdf_content(pdf_path, max_pages=max_pages, extract_image=False)
     return content.text
