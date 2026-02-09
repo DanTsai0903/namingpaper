@@ -23,12 +23,20 @@ A CLI tool that renames academic PDF papers using AI-extracted metadata.
 # Using uv (recommended)
 uv tool install namingpaper
 
+# Using pipx
+pipx install namingpaper
+
 # With optional providers
 uv tool install "namingpaper[openai]"    # OpenAI support
 uv tool install "namingpaper[gemini]"    # Gemini support
+# or with pipx
+pipx install "namingpaper[openai]"
+pipx install "namingpaper[gemini]"
 
 # Update to latest version
 uv tool upgrade namingpaper
+# or
+pipx upgrade namingpaper
 
 # Or install from source
 git clone https://github.com/DanTsai0903/namingpaper.git
