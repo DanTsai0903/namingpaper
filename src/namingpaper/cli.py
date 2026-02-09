@@ -618,16 +618,22 @@ def check(
             # Also match without tag suffix (e.g. "llama3.1:8b" matches "llama3.1:8b")
             available_base = {m["name"].split(":")[0] for m in tag_data.get("models", [])}
 
-            for label, model in [("OCR model", ocr_model), ("Text model", text_model)]:
-                if model in available or model.split(":")[0] in available_base:
-                    table.add_row(label, "[green]OK[/green]", model)
-                else:
-                    table.add_row(label, "[red]MISSING[/red]", f"Run: ollama pull {model}")
-                    all_ok = False
+            # Text model is required
+            if text_model in available or text_model.split(":")[0] in available_base:
+                table.add_row("Text model", "[green]OK[/green]", text_model)
+            else:
+                table.add_row("Text model", "[red]MISSING[/red]", f"Run: ollama pull {text_model}")
+                all_ok = False
+
+            # OCR model is optional (only used when PDF text extraction is insufficient)
+            if ocr_model in available or ocr_model.split(":")[0] in available_base:
+                table.add_row("OCR model", "[green]OK[/green]", ocr_model)
+            else:
+                table.add_row("OCR model", "[yellow]OPTIONAL[/yellow]", f"For scanned PDFs: ollama pull {ocr_model}")
         except (httpx.ConnectError, httpx.HTTPError):
             table.add_row("Ollama server", "[red]FAIL[/red]", f"Cannot connect to {base_url}")
-            table.add_row("OCR model", "[dim]SKIP[/dim]", "Server not reachable")
             table.add_row("Text model", "[dim]SKIP[/dim]", "Server not reachable")
+            table.add_row("OCR model", "[dim]SKIP[/dim]", "Server not reachable")
             all_ok = False
 
             console.print(table)
@@ -636,9 +642,8 @@ def check(
                 "[yellow]Ollama is not reachable. To set up:[/yellow]\n"
                 "  1. Install Ollama: https://ollama.com/download\n"
                 "  2. Start the server: ollama serve\n"
-                f"  3. Pull required models:\n"
-                f"       ollama pull {ocr_model}\n"
-                f"       ollama pull {text_model}\n\n"
+                f"  3. Pull the text model: ollama pull {text_model}\n"
+                f"  4. (Optional, for scanned PDFs) ollama pull {ocr_model}\n\n"
                 "Or use a different provider: namingpaper rename --provider claude <file>"
             )
             raise typer.Exit(1)
