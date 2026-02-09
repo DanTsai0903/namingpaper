@@ -298,7 +298,7 @@ namingpaper rename paper.pdf -m gemma2:9b
 namingpaper rename paper.pdf --ocr-model llava
 ```
 
-### Claude (included by default)
+### Claude
 
 ```bash
 export NAMINGPAPER_ANTHROPIC_API_KEY=sk-ant-...
