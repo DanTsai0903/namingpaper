@@ -35,8 +35,12 @@ def get_provider(
 
     match name:
         case "claude":
-            from namingpaper.providers.claude import ClaudeProvider
-
+            try:
+                from namingpaper.providers.claude import ClaudeProvider
+            except ImportError:
+                raise ValueError(
+                    "Claude provider not installed. Run: pip install namingpaper[claude]"
+                )
             if not settings.anthropic_api_key:
                 raise ValueError(
                     "NAMINGPAPER_ANTHROPIC_API_KEY environment variable not set"
