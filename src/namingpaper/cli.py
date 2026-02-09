@@ -575,5 +575,112 @@ def templates() -> None:
     console.print("[dim]Use with: namingpaper batch --template <name|pattern>[/dim]")
 
 
+@app.command()
+def check(
+    provider: Annotated[
+        str | None,
+        typer.Option(
+            "--provider",
+            "-p",
+            help="Provider to check (claude, openai, gemini, ollama)",
+        ),
+    ] = None,
+) -> None:
+    """Check if your environment is set up correctly."""
+    import httpx
+
+    settings = get_settings()
+    provider_name = provider or settings.ai_provider
+
+    table = Table(title="Setup Check", show_header=True)
+    table.add_column("Check", style="cyan")
+    table.add_column("Status")
+    table.add_column("Details")
+
+    all_ok = True
+
+    table.add_row("Provider", "[green]OK[/green]", provider_name)
+
+    if provider_name == "ollama":
+        ocr_model = settings.ollama_ocr_model or "deepseek-ocr"
+        text_model = settings.model_name or "llama3.1:8b"
+        base_url = settings.ollama_base_url
+
+        # Check connectivity
+        try:
+            resp = httpx.get(f"{base_url}/api/tags", timeout=5.0)
+            resp.raise_for_status()
+            tag_data = resp.json()
+            table.add_row("Ollama server", "[green]OK[/green]", base_url)
+
+            # Check models
+            available = {m["name"] for m in tag_data.get("models", [])}
+            # Also match without tag suffix (e.g. "llama3.1:8b" matches "llama3.1:8b")
+            available_base = {m["name"].split(":")[0] for m in tag_data.get("models", [])}
+
+            for label, model in [("OCR model", ocr_model), ("Text model", text_model)]:
+                if model in available or model.split(":")[0] in available_base:
+                    table.add_row(label, "[green]OK[/green]", model)
+                else:
+                    table.add_row(label, "[red]MISSING[/red]", f"Run: ollama pull {model}")
+                    all_ok = False
+        except (httpx.ConnectError, httpx.HTTPError):
+            table.add_row("Ollama server", "[red]FAIL[/red]", f"Cannot connect to {base_url}")
+            table.add_row("OCR model", "[dim]SKIP[/dim]", "Server not reachable")
+            table.add_row("Text model", "[dim]SKIP[/dim]", "Server not reachable")
+            all_ok = False
+
+            console.print(table)
+            console.print()
+            console.print(
+                "[yellow]Ollama is not reachable. To set up:[/yellow]\n"
+                "  1. Install Ollama: https://ollama.com/download\n"
+                "  2. Start the server: ollama serve\n"
+                f"  3. Pull required models:\n"
+                f"       ollama pull {ocr_model}\n"
+                f"       ollama pull {text_model}\n\n"
+                "Or use a different provider: namingpaper rename --provider claude <file>"
+            )
+            raise typer.Exit(1)
+    else:
+        # Cloud provider checks
+        provider_info = {
+            "claude": ("anthropic", settings.anthropic_api_key, "NAMINGPAPER_ANTHROPIC_API_KEY"),
+            "openai": ("openai", settings.openai_api_key, "NAMINGPAPER_OPENAI_API_KEY"),
+            "gemini": ("google.generativeai", settings.gemini_api_key, "NAMINGPAPER_GEMINI_API_KEY"),
+        }
+
+        if provider_name not in provider_info:
+            table.add_row("Provider", "[red]UNKNOWN[/red]", f"'{provider_name}' is not a valid provider")
+            console.print(table)
+            raise typer.Exit(1)
+
+        package, api_key, env_var = provider_info[provider_name]
+
+        # Check package
+        try:
+            __import__(package)
+            table.add_row("Package", "[green]OK[/green]", package)
+        except ImportError:
+            table.add_row("Package", "[red]MISSING[/red]", f"Run: uv add {package}")
+            all_ok = False
+
+        # Check API key
+        if api_key:
+            table.add_row("API key", "[green]OK[/green]", f"{env_var} is set")
+        else:
+            table.add_row("API key", "[red]MISSING[/red]", f"Set {env_var}")
+            all_ok = False
+
+    console.print(table)
+    console.print()
+
+    if all_ok:
+        console.print("[green]All checks passed![/green]")
+    else:
+        console.print("[yellow]Some checks failed. See details above.[/yellow]")
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()
