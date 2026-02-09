@@ -60,6 +60,20 @@ Tests use `pytest-asyncio` with `asyncio_mode = "auto"`.
 
 **Config priority:** CLI args > env vars (`NAMINGPAPER_*`) > config file (`~/.namingpaper/config.toml`) > defaults. Managed via Pydantic Settings in `config.py`.
 
+## Release Procedure
+
+1. Bump version in both `pyproject.toml` and `src/namingpaper/__init__.py`
+2. Commit and push: `git add -A && git commit -m "Bump version to X.Y.Z" && git push origin main`
+3. Create GitHub release: `gh release create vX.Y.Z --title "vX.Y.Z" --prerelease --notes "..."`
+   - Drop `--prerelease` for stable releases
+4. Build and publish to PyPI:
+   ```bash
+   uv build
+   source .env  # contains UV_PUBLISH_TOKEN
+   uv publish --token "$UV_PUBLISH_TOKEN"
+   ```
+5. Clean old dists if needed: `rm -rf dist/` before building to avoid uploading stale files
+
 ## uv Rules
 
 This project uses **uv** as its Python package and project manager.
