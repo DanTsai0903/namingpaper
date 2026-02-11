@@ -3,7 +3,7 @@ name = "namingpaper"
 version = "0.1.8.1"
 description = "CLI tool to rename academic papers using AI-extracted metadata"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11"
 dependencies = [
     "typer>=0.9.0",
     "rich>=13.0.0",
