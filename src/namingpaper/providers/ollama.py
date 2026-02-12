@@ -131,9 +131,10 @@ class OllamaProvider(AIProvider):
                 raise RuntimeError(
                     f"Model '{model}' not found in Ollama.\n\n"
                     f"Pull it with: ollama pull {model}\n\n"
-                    f"Required models for the default setup:\n"
-                    f"  - {self.ocr_model} (OCR)\n"
-                    f"  - {self.text_model} (text parsing)"
+                    f"Required model:\n"
+                    f"  - {self.text_model} (text parsing)\n\n"
+                    f"Optional (for scanned PDFs):\n"
+                    f"  - {self.ocr_model} (OCR)"
                 ) from e
             raise RuntimeError(
                 f"Ollama API error: {e.response.status_code} - {e.response.text}"
@@ -144,9 +145,8 @@ class OllamaProvider(AIProvider):
                 f"Ollama is required for the default provider. To set up:\n"
                 f"  1. Install Ollama: https://ollama.com/download\n"
                 f"  2. Start the server: ollama serve\n"
-                f"  3. Pull required models:\n"
-                f"       ollama pull {self.ocr_model}\n"
-                f"       ollama pull {self.text_model}\n\n"
+                f"  3. Pull the text model: ollama pull {self.text_model}\n"
+                f"  4. (Optional, for scanned PDFs) ollama pull {self.ocr_model}\n\n"
                 f"Or use a different provider: namingpaper rename --provider claude <file>"
             )
         except httpx.ReadTimeout:
