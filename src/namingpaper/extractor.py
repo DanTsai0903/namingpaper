@@ -39,14 +39,20 @@ async def extract_metadata(
         raise ValueError(f"Not a PDF file: {pdf_path}")
 
     # Get provider
+    created_provider = False
     if provider is None:
         provider = get_provider(provider_name, model_name=model_name, ocr_model=ocr_model, keep_alive=keep_alive)
+        created_provider = True
 
     # Extract PDF content
     content = extract_pdf_content(pdf_path)
 
     # Extract metadata using AI
-    metadata = await provider.extract_metadata(content)
+    try:
+        metadata = await provider.extract_metadata(content)
+    finally:
+        if created_provider and hasattr(provider, "aclose"):
+            await provider.aclose()
 
     # Check confidence threshold
     settings = get_settings()

@@ -4,6 +4,19 @@ version = "0.2.3"
 description = "CLI tool to rename academic papers using AI-extracted metadata"
 readme = "README.md"
 requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "DanTsai0903"}]
+keywords = ["pdf", "academic", "papers", "rename", "metadata", "ai", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+]
+
 dependencies = [
     "typer>=0.9.0",
     "rich>=13.0.0",
@@ -12,6 +25,11 @@ dependencies = [
     "pymupdf>=1.26.7",
     "httpx>=0.27.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/DanTsai0903/namingpaper"
+Repository = "https://github.com/DanTsai0903/namingpaper"
+Issues = "https://github.com/DanTsai0903/namingpaper/issues"
 
 [project.optional-dependencies]
 openai = ["openai>=1.0.0"]
@@ -43,5 +61,6 @@ filterwarnings = [
 
 [dependency-groups]
 dev = [
-    "pytest-asyncio>=1.3.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
 ]

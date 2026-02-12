@@ -37,6 +37,18 @@ class OllamaProvider(AIProvider):
         self.keep_alive = keep_alive
         self._client: httpx.AsyncClient | None = None
 
+    async def aclose(self) -> None:
+        """Close the underlying HTTP client."""
+        if self._client is not None and not self._client.is_closed:
+            await self._client.aclose()
+            self._client = None
+
+    async def __aenter__(self) -> "OllamaProvider":
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.aclose()
+
     async def extract_metadata(self, content: PDFContent) -> PaperMetadata:
         """Extract metadata using Ollama pipeline.
 

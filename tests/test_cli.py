@@ -106,3 +106,70 @@ class TestConfigCommand:
 
         assert result.exit_code == 0
         assert "Environment variables" in result.output
+
+
+class TestTemplatesCommand:
+    def test_shows_all_presets(self):
+        result = runner.invoke(app, ["templates"])
+
+        assert result.exit_code == 0
+        assert "default" in result.output
+        assert "compact" in result.output
+        assert "full" in result.output
+        assert "simple" in result.output
+
+    def test_shows_patterns(self):
+        result = runner.invoke(app, ["templates"])
+
+        assert result.exit_code == 0
+        assert "{authors}" in result.output
+        assert "{year}" in result.output
+
+    def test_shows_usage_hint(self):
+        result = runner.invoke(app, ["templates"])
+
+        assert result.exit_code == 0
+        assert "--template" in result.output
+
+
+class TestCheckCommand:
+    def test_check_cloud_provider_missing_key(self):
+        with patch("namingpaper.cli.get_settings") as mock_settings:
+            mock_settings.return_value = MagicMock(
+                ai_provider="claude",
+                anthropic_api_key=None,
+                ollama_base_url="http://localhost:11434",
+                ollama_ocr_model=None,
+                model_name=None,
+            )
+            result = runner.invoke(app, ["check", "--provider", "claude"])
+
+        assert result.exit_code == 1
+        assert "MISSING" in result.output
+
+    def test_check_cloud_provider_with_key(self):
+        with patch("namingpaper.cli.get_settings") as mock_settings:
+            mock_settings.return_value = MagicMock(
+                ai_provider="claude",
+                anthropic_api_key="sk-test",
+                ollama_base_url="http://localhost:11434",
+                ollama_ocr_model=None,
+                model_name=None,
+            )
+            result = runner.invoke(app, ["check", "--provider", "claude"])
+
+        assert result.exit_code == 0
+        assert "All checks passed" in result.output
+
+    def test_check_unknown_provider(self):
+        with patch("namingpaper.cli.get_settings") as mock_settings:
+            mock_settings.return_value = MagicMock(
+                ai_provider="unknown_provider",
+                ollama_base_url="http://localhost:11434",
+                ollama_ocr_model=None,
+                model_name=None,
+            )
+            result = runner.invoke(app, ["check", "--provider", "unknown_provider"])
+
+        assert result.exit_code == 1
+        assert "UNKNOWN" in result.output

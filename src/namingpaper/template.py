@@ -119,10 +119,15 @@ def build_filename_from_template(
     # Sanitize
     filename = sanitize_filename(filename)
 
-    # Truncate if too long
+    # Truncate if too long (cut at word boundary)
     if len(filename) > max_filename_length:
-        truncated = filename[:max_filename_length - 4].rstrip(". ")
-        filename = truncated + ".pdf"
+        limit = max_filename_length - 7  # room for "....pdf"
+        truncated = filename[:limit]
+        last_space = truncated.rfind(" ")
+        if last_space > limit // 2:
+            truncated = truncated[:last_space]
+        truncated = truncated.rstrip(".,;: ")
+        filename = truncated + "....pdf"
 
     return filename
 

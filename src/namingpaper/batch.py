@@ -142,44 +142,48 @@ async def process_batch(
     results: list[BatchItem] = []
     total = len(files)
 
-    if parallel <= 1:
-        # Sequential processing
-        for i, pdf_path in enumerate(files):
-            item = await process_single_file(pdf_path, provider, template, output_dir)
-            results.append(item)
-            if progress_callback:
-                progress_callback(i + 1, total, item)
-    else:
-        # Parallel processing with semaphore
-        semaphore = asyncio.Semaphore(parallel)
-        lock = asyncio.Lock()
-        completed = 0
-
-        async def process_with_semaphore(pdf_path: Path) -> BatchItem:
-            nonlocal completed
-            async with semaphore:
+    try:
+        if parallel <= 1:
+            # Sequential processing
+            for i, pdf_path in enumerate(files):
                 item = await process_single_file(pdf_path, provider, template, output_dir)
-                async with lock:
-                    completed += 1
-                    if progress_callback:
-                        progress_callback(completed, total, item)
-                return item
+                results.append(item)
+                if progress_callback:
+                    progress_callback(i + 1, total, item)
+        else:
+            # Parallel processing with semaphore
+            semaphore = asyncio.Semaphore(parallel)
+            lock = asyncio.Lock()
+            completed = 0
 
-        results = await asyncio.gather(
-            *[process_with_semaphore(f) for f in files],
-            return_exceptions=True,
-        )
-        # Handle any exceptions that were returned
-        processed_results = []
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                item = BatchItem(source=files[i])
-                item.status = BatchItemStatus.ERROR
-                item.error = str(result)
-                processed_results.append(item)
-            else:
-                processed_results.append(result)
-        results = processed_results
+            async def process_with_semaphore(pdf_path: Path) -> BatchItem:
+                nonlocal completed
+                async with semaphore:
+                    item = await process_single_file(pdf_path, provider, template, output_dir)
+                    async with lock:
+                        completed += 1
+                        if progress_callback:
+                            progress_callback(completed, total, item)
+                    return item
+
+            results = await asyncio.gather(
+                *[process_with_semaphore(f) for f in files],
+                return_exceptions=True,
+            )
+            # Handle any exceptions that were returned
+            processed_results = []
+            for i, result in enumerate(results):
+                if isinstance(result, Exception):
+                    item = BatchItem(source=files[i])
+                    item.status = BatchItemStatus.ERROR
+                    item.error = str(result)
+                    processed_results.append(item)
+                else:
+                    processed_results.append(result)
+            results = processed_results
+    finally:
+        if hasattr(provider, "aclose"):
+            await provider.aclose()
 
     return results
 

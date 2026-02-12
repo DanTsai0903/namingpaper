@@ -334,6 +334,48 @@ namingpaper rename paper.pdf -p gemini
 namingpaper rename paper.pdf -p gemini -m gemini-2.0-flash
 ```
 
+## Troubleshooting
+
+### Ollama connection errors
+
+```
+Cannot connect to Ollama at http://localhost:11434
+```
+
+Make sure Ollama is running:
+
+```bash
+ollama serve
+```
+
+### Model not found
+
+```
+Model 'qwen3:8b' not found in Ollama
+```
+
+Pull the required model:
+
+```bash
+ollama pull qwen3:8b
+```
+
+### Low confidence / skipped files
+
+If files are skipped with "low confidence", the AI wasn't confident the file is an academic paper. You can lower the threshold:
+
+```bash
+export NAMINGPAPER_MIN_CONFIDENCE=0.3
+```
+
+### Timeout errors
+
+For slow machines or large models, Ollama may time out. Try a smaller model:
+
+```bash
+namingpaper rename paper.pdf -m qwen3:4b
+```
+
 ## Development
 
 ```bash
@@ -348,6 +390,15 @@ uv run pytest -v
 # Run a specific test
 uv run pytest tests/test_formatter.py -v
 ```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Make your changes and add tests
+4. Run `uv run pytest` to verify tests pass
+5. Commit and push to your fork
+6. Open a pull request
 
 ## License
 
