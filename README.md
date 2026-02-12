@@ -49,7 +49,7 @@ uv sync
 The default provider is Ollama (local, no API key needed). Install it from [ollama.com](https://ollama.com), then pull the required model:
 
 ```bash
-ollama pull llama3.1:8b
+ollama pull qwen3:8b
 
 # Preview the rename (dry run)
 namingpaper rename paper.pdf
@@ -268,7 +268,7 @@ Create `~/.namingpaper/config.toml`:
 ai_provider = "ollama"
 ollama_base_url = "http://localhost:11434"
 # ollama_ocr_model = "deepseek-ocr"    # Override OCR model
-# model_name = "llama3.1:8b"           # Override text model
+# model_name = "qwen3:8b"              # Override text model
 
 # Or use cloud providers
 # ai_provider = "claude"
@@ -287,7 +287,7 @@ Local LLM, no API key needed. Just have Ollama running. Text is extracted from P
 
 ```bash
 # Pull the required model
-ollama pull llama3.1:8b        # Text model (parses metadata)
+ollama pull qwen3:8b           # Text model (parses metadata)
 
 # Optional: OCR fallback for scanned PDFs
 ollama pull deepseek-ocr

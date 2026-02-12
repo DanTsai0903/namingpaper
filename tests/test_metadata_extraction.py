@@ -83,7 +83,7 @@ async def test_metadata_extraction():
         prompt = f"Paper text:\n\n{text}\n\n{EXTRACTION_PROMPT}"
 
         parse_payload = {
-            "model": "llama3.1:8b",
+            "model": "qwen3:8b",
             "prompt": prompt,
             "stream": False,
             "format": "json",

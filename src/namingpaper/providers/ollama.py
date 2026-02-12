@@ -15,11 +15,11 @@ class OllamaProvider(AIProvider):
 
     Uses a two-stage approach:
     1. OCR model (deepseek-ocr) extracts text from PDF image
-    2. Text model (llama3.1:8b) parses metadata from text
+    2. Text model (qwen3:8b) parses metadata from text
     """
 
     DEFAULT_OCR_MODEL = "deepseek-ocr"
-    DEFAULT_TEXT_MODEL = "llama3.1:8b"
+    DEFAULT_TEXT_MODEL = "qwen3:8b"
     DEFAULT_BASE_URL = "http://localhost:11434"
 
     def __init__(

@@ -635,7 +635,7 @@ def check(
 
     if provider_name == "ollama":
         ocr_model = settings.ollama_ocr_model or "deepseek-ocr"
-        text_model = settings.model_name or "llama3.1:8b"
+        text_model = settings.model_name or "qwen3:8b"
         base_url = settings.ollama_base_url
 
         # Check connectivity
