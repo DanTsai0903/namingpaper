@@ -3,7 +3,7 @@
 import asyncio
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import AsyncIterator, Callable
+from typing import Callable
 
 from namingpaper.models import (
     BatchItem,
@@ -195,11 +195,13 @@ def detect_batch_collisions(items: list[BatchItem]) -> list[BatchItem]:
     Returns:
         Updated items with collision status
     """
-    # Group by destination
-    dest_map: dict[Path, list[BatchItem]] = {}
+    # Group by destination (include both OK and COLLISION items for cross-detection)
+    # Use case-folded string key for case-insensitive filesystems (macOS, Windows)
+    dest_map: dict[str, list[BatchItem]] = {}
     for item in items:
-        if item.destination and item.status == BatchItemStatus.OK:
-            dest_map.setdefault(item.destination, []).append(item)
+        if item.destination and item.status in (BatchItemStatus.OK, BatchItemStatus.COLLISION):
+            key = str(item.destination).casefold()
+            dest_map.setdefault(key, []).append(item)
 
     # Mark internal collisions
     for dest, colliding_items in dest_map.items():

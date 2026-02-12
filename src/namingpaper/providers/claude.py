@@ -1,5 +1,6 @@
 """Anthropic Claude provider implementation."""
 
+import asyncio
 import base64
 
 import anthropic
@@ -42,27 +43,24 @@ class ClaudeProvider(AIProvider):
                 }
             )
 
-        # Add text
+        # Add text and extraction prompt in single message
         message_content.append(
             {
                 "type": "text",
-                "text": f"Paper text:\n\n{text}",
+                "text": f"Paper text:\n\n{text}\n\n{EXTRACTION_PROMPT}",
             }
         )
 
-        # Call Claude API (sync, but wrapped for async interface)
+        # Call Claude API (sync client run in thread to avoid blocking event loop)
         try:
-            response = self.client.messages.create(
+            response = await asyncio.to_thread(
+                self.client.messages.create,
                 model=self.model,
                 max_tokens=1024,
                 messages=[
                     {
                         "role": "user",
                         "content": message_content,
-                    },
-                    {
-                        "role": "user",
-                        "content": EXTRACTION_PROMPT,
                     },
                 ],
             )

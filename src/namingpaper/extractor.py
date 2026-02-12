@@ -32,6 +32,12 @@ async def extract_metadata(
     Returns:
         Extracted paper metadata
     """
+    # Validate input
+    if not pdf_path.is_file():
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+    if pdf_path.suffix.lower() != ".pdf":
+        raise ValueError(f"Not a PDF file: {pdf_path}")
+
     # Get provider
     if provider is None:
         provider = get_provider(provider_name, model_name=model_name, ocr_model=ocr_model, keep_alive=keep_alive)

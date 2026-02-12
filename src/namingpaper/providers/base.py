@@ -4,6 +4,8 @@ import json
 import re
 from abc import ABC, abstractmethod
 
+from pydantic import ValidationError
+
 from namingpaper.models import PDFContent, PaperMetadata
 
 _RE_JSON_BLOCK = re.compile(r"```json\s*(.*?)```", re.DOTALL)
@@ -81,4 +83,9 @@ class AIProvider(ABC):
                 f"Response: {response_text[:500]}"
             ) from e
 
-        return PaperMetadata(**data)
+        try:
+            return PaperMetadata(**data)
+        except ValidationError as e:
+            raise RuntimeError(
+                f"{provider_name} returned malformed metadata: {e}"
+            ) from e

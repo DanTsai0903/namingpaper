@@ -131,7 +131,8 @@ def build_filename(
 
     # Truncate if too long (preserve .pdf extension)
     if len(filename) > max_filename_length:
-        filename = filename[: max_filename_length - 4] + ".pdf"
+        truncated = filename[: max_filename_length - 4].rstrip(". ")
+        filename = truncated + ".pdf"
 
     return filename
 

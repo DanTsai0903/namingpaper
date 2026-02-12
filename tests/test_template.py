@@ -90,10 +90,10 @@ class TestBuildFilenameFromTemplate:
         assert result.endswith(".pdf")
 
     def test_simple_template(self, metadata: PaperMetadata) -> None:
-        """Should format using simple template."""
+        """Should format using simple template with dash separators."""
         result = build_filename_from_template(metadata, "simple")
-        # Note: sanitize_filename converts underscores to spaces
         assert "1993" in result
+        assert " - " in result
         assert result.endswith(".pdf")
 
     def test_custom_template(self, metadata: PaperMetadata) -> None:

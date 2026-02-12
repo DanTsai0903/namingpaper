@@ -76,7 +76,7 @@ class TestRenameCommand:
         ):
             result = runner.invoke(app, ["rename", str(source)])
 
-        assert result.exit_code == 0
+        assert result.exit_code == 2
         assert "Skipped" in result.output
         assert "academic paper" in result.output
 
@@ -98,7 +98,7 @@ class TestConfigCommand:
 
         assert result.exit_code == 0
         assert "claude" in result.output
-        assert "****1234" in result.output  # Masked key
+        assert "set" in result.output  # Key status shown without revealing characters
         assert "localhost:11434" in result.output  # Ollama URL
 
     def test_config_no_args(self):

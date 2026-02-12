@@ -9,16 +9,16 @@ from pydantic import BaseModel, Field
 class PaperMetadata(BaseModel):
     """Metadata extracted from an academic paper."""
 
-    authors: list[str] = Field(description="List of author last names")
+    authors: list[str] = Field(min_length=1, description="List of author last names")
     authors_full: list[str] = Field(
         default_factory=list, description="List of author full names"
     )
     year: int = Field(description="Publication year")
-    journal: str = Field(description="Full journal name")
+    journal: str = Field(min_length=1, description="Full journal name")
     journal_abbrev: str | None = Field(
         default=None, description="Common journal abbreviation"
     )
-    title: str = Field(description="Paper title")
+    title: str = Field(min_length=1, description="Paper title")
     confidence: float = Field(
         default=1.0, ge=0.0, le=1.0, description="Extraction confidence score"
     )

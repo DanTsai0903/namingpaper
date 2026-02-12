@@ -1,5 +1,7 @@
 """Google Gemini provider implementation."""
 
+import asyncio
+
 from namingpaper.config import get_settings
 from namingpaper.models import PDFContent, PaperMetadata
 from namingpaper.providers.base import AIProvider, EXTRACTION_PROMPT
@@ -45,10 +47,12 @@ class GeminiProvider(AIProvider):
         # Add text and prompt
         parts.append(f"Paper text:\n\n{text}\n\n{EXTRACTION_PROMPT}")
 
-        # Call Gemini API
+        # Call Gemini API (sync client run in thread to avoid blocking event loop)
         try:
-            response = self.model.generate_content(
-                parts, request_options=self._request_options
+            response = await asyncio.to_thread(
+                self.model.generate_content,
+                parts,
+                request_options=self._request_options,
             )
         except Exception as e:
             err = str(e).lower()
@@ -63,6 +67,13 @@ class GeminiProvider(AIProvider):
             raise
 
         # Parse response
-        response_text = response.text
+        try:
+            response_text = response.text
+        except ValueError as e:
+            raise RuntimeError(
+                f"Gemini returned no usable response (may have been blocked by safety filters): {e}"
+            ) from e
+        if not response_text:
+            raise RuntimeError("Gemini returned an empty response.")
 
         return self._parse_response_json(response_text, "Gemini")

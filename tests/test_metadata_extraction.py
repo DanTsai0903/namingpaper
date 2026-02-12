@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
-"""Debug script to see what metadata extraction returns."""
+"""Debug script to see what metadata extraction returns.
+
+Requires a running Ollama server with the default models.
+"""
 import asyncio
 import json
 from pathlib import Path
 
+import pytest
+
 from namingpaper.pdf_reader import extract_pdf_content
 from namingpaper.providers.ollama import OllamaProvider
 
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+SAMPLE_PDF = FIXTURES_DIR / "sample.pdf"
 
+
+@pytest.mark.skip(reason="Requires local Ollama server with default models")
 async def test_metadata_extraction():
-    pdf_path = Path(
-        "/Users/tsaipingjui/Library/CloudStorage/OneDrive-國立臺灣大學/論文/"
-        "Yoshiba (2015, Review of Economic Studies and Management), "
-        "Maximum Likelihood Estimation of Skew-t Copulas with Its Applications to Stock Returns.pdf.pdf"
-    )
+    pdf_path = SAMPLE_PDF
 
     print(f"Testing with: {pdf_path.name}\n")
 

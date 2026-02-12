@@ -88,6 +88,14 @@ def rename(
             resolve_path=True,
         ),
     ] = None,
+    template: Annotated[
+        str | None,
+        typer.Option(
+            "--template",
+            "-t",
+            help="Filename template or preset (default, compact, full, simple)",
+        ),
+    ] = None,
     collision: Annotated[
         CollisionStrategy,
         typer.Option(
@@ -107,6 +115,15 @@ def rename(
         console.print(f"[red]Error:[/red] File must be a PDF: {pdf_path}")
         raise typer.Exit(1)
 
+    # Validate template if provided
+    if template:
+        from namingpaper.template import validate_template, get_template
+        template_str = get_template(template)
+        is_valid, error = validate_template(template_str)
+        if not is_valid:
+            console.print(f"[red]Invalid template:[/red] {error}")
+            raise typer.Exit(1)
+
     # Extract metadata and plan rename
     with console.status("[bold blue]Extracting metadata..."):
         try:
@@ -115,13 +132,19 @@ def rename(
             console.print(
                 f"[yellow]Skipped:[/yellow] {e}"
             )
-            raise typer.Exit(0)
+            raise typer.Exit(2)
         except ValueError as e:
             console.print(f"[red]Error:[/red] {e}")
             raise typer.Exit(1)
         except Exception as e:
             console.print(f"[red]Error extracting metadata:[/red] {e}")
             raise typer.Exit(1)
+
+    # Apply template if provided
+    if template:
+        from namingpaper.template import build_filename_from_template
+        filename = build_filename_from_template(operation.metadata, template)
+        operation.destination = pdf_path.parent / filename
 
     # If output_dir specified, update destination to that directory
     copy_mode = output_dir is not None
@@ -180,7 +203,7 @@ def rename(
     elif copy_mode:
         console.print(f"[green]Copied to:[/green] {result}")
     else:
-        console.print(f"[green]Renamed to:[/green] {result.name}")
+        console.print(f"[green]Renamed to:[/green] {result}")
 
 
 @app.command()
@@ -372,6 +395,7 @@ def batch(
     ok_count = sum(1 for i in items if i.status == BatchItemStatus.OK)
     collision_count = sum(1 for i in items if i.status == BatchItemStatus.COLLISION)
     error_count = sum(1 for i in items if i.status == BatchItemStatus.ERROR)
+    skipped_count = sum(1 for i in items if i.status == BatchItemStatus.SKIPPED)
 
     # JSON output mode
     if json_output:
@@ -391,9 +415,10 @@ def batch(
                 "ok": ok_count,
                 "collision": collision_count,
                 "error": error_count,
+                "skipped": skipped_count,
             },
         }
-        console.print(json.dumps(output, indent=2))
+        print(json.dumps(output, indent=2))
         return
 
     # Display preview table
@@ -434,11 +459,14 @@ def batch(
     console.print()
 
     # Summary
-    console.print(
-        f"Summary: [green]{ok_count} ready[/green], "
-        f"[yellow]{collision_count} collisions[/yellow], "
-        f"[red]{error_count} errors[/red]"
-    )
+    summary_parts = [f"[green]{ok_count} ready[/green]"]
+    if collision_count:
+        summary_parts.append(f"[yellow]{collision_count} collisions[/yellow]")
+    if skipped_count:
+        summary_parts.append(f"[dim]{skipped_count} skipped[/dim]")
+    if error_count:
+        summary_parts.append(f"[red]{error_count} errors[/red]")
+    console.print(f"Summary: {', '.join(summary_parts)}")
     console.print()
 
     # Dry run mode
@@ -455,7 +483,10 @@ def batch(
     # Confirm
     if not yes:
         action = "copy" if output_dir else "rename"
-        processable = ok_count + collision_count
+        if collision == CollisionStrategy.SKIP:
+            processable = ok_count
+        else:
+            processable = ok_count + collision_count
         confirmed = typer.confirm(
             f"Proceed with {action} of {processable} file(s)? "
             f"(Collision strategy: {collision.value})"
@@ -518,19 +549,19 @@ def config(
         table.add_row("AI Provider", settings.ai_provider)
         table.add_row(
             "Anthropic API Key",
-            "****" + settings.anthropic_api_key[-4:]
+            "[green]set[/green]"
             if settings.anthropic_api_key
             else "[dim]not set[/dim]",
         )
         table.add_row(
             "OpenAI API Key",
-            "****" + settings.openai_api_key[-4:]
+            "[green]set[/green]"
             if settings.openai_api_key
             else "[dim]not set[/dim]",
         )
         table.add_row(
             "Gemini API Key",
-            "****" + settings.gemini_api_key[-4:]
+            "[green]set[/green]"
             if settings.gemini_api_key
             else "[dim]not set[/dim]",
         )
@@ -565,7 +596,7 @@ def templates() -> None:
         "default": "Smith, Wang, (2023, JFE), Asset pricing....pdf",
         "compact": "Smith, Wang (2023) Asset pricing....pdf",
         "full": "Smith, Wang, (2023, Journal of Financial Economics), Asset pricing....pdf",
-        "simple": "Smith, Wang_2023_Asset pricing....pdf",
+        "simple": "Smith, Wang - 2023 - Asset pricing....pdf",
     }
 
     for name, pattern in list_presets().items():
@@ -616,18 +647,16 @@ def check(
 
             # Check models
             available = {m["name"] for m in tag_data.get("models", [])}
-            # Also match without tag suffix (e.g. "llama3.1:8b" matches "llama3.1:8b")
-            available_base = {m["name"].split(":")[0] for m in tag_data.get("models", [])}
 
-            # Text model is required
-            if text_model in available or text_model.split(":")[0] in available_base:
+            # Text model is required (exact match only)
+            if text_model in available:
                 table.add_row("Text model", "[green]OK[/green]", text_model)
             else:
                 table.add_row("Text model", "[red]MISSING[/red]", f"Run: ollama pull {text_model}")
                 all_ok = False
 
             # OCR model is optional (only used when PDF text extraction is insufficient)
-            if ocr_model in available or ocr_model.split(":")[0] in available_base:
+            if ocr_model in available:
                 table.add_row("OCR model", "[green]OK[/green]", ocr_model)
             else:
                 table.add_row("OCR model", "[yellow]OPTIONAL[/yellow]", f"For scanned PDFs: ollama pull {ocr_model}")

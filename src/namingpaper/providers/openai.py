@@ -1,5 +1,6 @@
 """OpenAI provider implementation."""
 
+import asyncio
 import base64
 
 from namingpaper.config import get_settings
@@ -59,9 +60,10 @@ class OpenAIProvider(AIProvider):
                 },
             )
 
-        # Call OpenAI API
+        # Call OpenAI API (sync client run in thread to avoid blocking event loop)
         try:
-            response = self.client.chat.completions.create(
+            response = await asyncio.to_thread(
+                self.client.chat.completions.create,
                 model=self.model,
                 max_tokens=1024,
                 messages=[

@@ -102,6 +102,7 @@ Options:
   -p, --provider TEXT        AI provider (claude, openai, gemini, ollama)
   -m, --model TEXT           Override the default model for the provider
   --ocr-model TEXT           Override Ollama OCR model (default: deepseek-ocr)
+  -t, --template TEXT        Filename template or preset name
   -o, --output-dir DIR       Copy to directory (keeps original)
   -c, --collision STRATEGY   Handle collisions: skip, increment, overwrite
 ```
@@ -146,6 +147,9 @@ namingpaper rename paper.pdf
 
 # Execute rename
 namingpaper rename paper.pdf --execute
+
+# Use a template
+namingpaper rename paper.pdf -t compact --execute
 
 # Copy to a different folder (keeps original)
 namingpaper rename paper.pdf -o ~/Papers --execute
@@ -211,7 +215,7 @@ Templates control how the output filename is formatted.
 | `default` | `{authors}, ({year}, {journal}), {title}` | `Fama and French, (1993, JFE), Common risk....pdf` |
 | `compact` | `{authors} ({year}) {title}` | `Fama and French (1993) Common risk....pdf` |
 | `full` | `{authors}, ({year}, {journal_full}), {title}` | `Fama and French, (1993, Journal of Financial Economics), Common....pdf` |
-| `simple` | `{authors}_{year}_{title}` | `Fama and French_1993_Common risk....pdf` |
+| `simple` | `{authors} - {year} - {title}` | `Fama and French - 1993 - Common risk....pdf` |
 
 ### Template Placeholders
 
@@ -230,7 +234,7 @@ Templates control how the output filename is formatted.
 
 ```bash
 # Year-first format
-namingpaper batch ~/papers -t "{year} - {authors} - {title}"
+namingpaper rename paper.pdf -t "{year} - {authors} - {title}"
 
 # Minimal format
 namingpaper batch ~/papers -t "{authors} {year}"

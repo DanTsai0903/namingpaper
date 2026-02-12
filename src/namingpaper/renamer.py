@@ -50,13 +50,13 @@ def validate_rename(operation: RenameOperation) -> list[str]:
     """Validate a rename operation, returning list of warnings."""
     warnings = []
 
-    # Check source is a file (not directory or symlink); is_file() returns False if nonexistent
-    if not operation.source.is_file():
-        raise RenameError(f"Source is not a regular file or does not exist: {operation.source}")
-
-    # Don't follow symlinks
+    # Don't follow symlinks (check before is_file, since symlinks to files pass is_file)
     if operation.source.is_symlink():
         raise RenameError(f"Source is a symlink (not supported): {operation.source}")
+
+    # Check source is a regular file (not directory); is_file() returns False if nonexistent
+    if not operation.source.is_file():
+        raise RenameError(f"Source is not a regular file or does not exist: {operation.source}")
 
     # Check destination directory exists
     if not operation.destination.parent.exists():
@@ -114,7 +114,7 @@ def execute_rename(
     if copy:
         shutil.copy2(operation.source, destination)
     else:
-        operation.source.rename(destination)
+        operation.source.replace(destination)
     return destination
 
 

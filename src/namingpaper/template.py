@@ -1,7 +1,6 @@
 """Template-based filename formatting."""
 
 import re
-from typing import Callable
 
 _RE_PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
@@ -22,7 +21,7 @@ PRESET_TEMPLATES: dict[str, str] = {
     "default": "{authors}, ({year}, {journal}), {title}",
     "compact": "{authors} ({year}) {title}",
     "full": "{authors}, ({year}, {journal_full}), {title}",
-    "simple": "{authors}_{year}_{title}",
+    "simple": "{authors} - {year} - {title}",
 }
 
 
@@ -122,7 +121,8 @@ def build_filename_from_template(
 
     # Truncate if too long
     if len(filename) > max_filename_length:
-        filename = filename[:max_filename_length - 4] + ".pdf"
+        truncated = filename[:max_filename_length - 4].rstrip(". ")
+        filename = truncated + ".pdf"
 
     return filename
 
