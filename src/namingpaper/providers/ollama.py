@@ -38,10 +38,23 @@ class OllamaProvider(AIProvider):
         self._client: httpx.AsyncClient | None = None
 
     async def aclose(self) -> None:
-        """Close the underlying HTTP client."""
+        """Unload models and close the underlying HTTP client."""
         if self._client is not None and not self._client.is_closed:
+            await self._unload_models()
             await self._client.aclose()
             self._client = None
+
+    async def _unload_models(self) -> None:
+        """Tell Ollama to unload models from memory immediately."""
+        client = self._get_client()
+        for model in {self.text_model, self.ocr_model}:
+            try:
+                await client.post(
+                    f"{self.base_url}/api/generate",
+                    json={"model": model, "keep_alive": "0s"},
+                )
+            except httpx.HTTPError:
+                pass
 
     async def __aenter__(self) -> "OllamaProvider":
         return self
