@@ -1,6 +1,6 @@
 [project]
 name = "namingpaper"
-version = "0.2.0"
+version = "0.2.1"
 description = "CLI tool to rename academic papers using AI-extracted metadata"
 readme = "README.md"
 requires-python = ">=3.11"
