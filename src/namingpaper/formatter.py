@@ -7,17 +7,21 @@ from pathlib import Path
 from namingpaper.config import get_settings
 from namingpaper.models import PaperMetadata
 
+_RE_INVALID_CHARS = re.compile(r'[<>:"/\\|?*]')
+_RE_WHITESPACE = re.compile(r"[\s_]+")
+
 
 def sanitize_filename(name: str) -> str:
     """Remove or replace characters that are invalid in filenames."""
-    # Normalize unicode
-    name = unicodedata.normalize("NFKD", name)
-    # Remove control characters
-    name = "".join(c for c in name if not unicodedata.category(c).startswith("C"))
+    # Normalize unicode (skip for pure ASCII)
+    if not name.isascii():
+        name = unicodedata.normalize("NFKD", name)
+        # Remove control characters
+        name = "".join(c for c in name if not unicodedata.category(c).startswith("C"))
     # Replace path separators and other problematic characters
-    name = re.sub(r'[<>:"/\\|?*]', "", name)
-    # Replace multiple spaces/underscores with single underscore
-    name = re.sub(r"[\s_]+", " ", name)
+    name = _RE_INVALID_CHARS.sub("", name)
+    # Replace multiple spaces/underscores with single space
+    name = _RE_WHITESPACE.sub(" ", name)
     # Strip leading/trailing whitespace and dots
     name = name.strip(". ")
     return name
@@ -110,10 +114,11 @@ def format_journal(journal: str, journal_abbrev: str | None) -> str:
 def format_title(title: str, max_words: int = 6) -> str:
     """Format title for filename, truncating if needed."""
     # Take first N words
-    words = title.split()[:max_words]
+    all_words = title.split()
+    words = all_words[:max_words]
     result = " ".join(words)
     # Add ellipsis if truncated
-    if len(title.split()) > max_words:
+    if len(all_words) > max_words:
         result = result.rstrip(".,;:") + "..."
     return result
 

@@ -3,6 +3,8 @@
 import re
 from typing import Callable
 
+_RE_PLACEHOLDER = re.compile(r"\{(\w+)\}")
+
 from namingpaper.models import PaperMetadata
 from namingpaper.formatter import (
     format_authors,
@@ -50,7 +52,7 @@ def validate_template(template: str) -> tuple[bool, str | None]:
     }
 
     # Find all placeholders in template
-    found = re.findall(r"\{(\w+)\}", template)
+    found = _RE_PLACEHOLDER.findall(template)
 
     if not found:
         return False, "Template must contain at least one placeholder"
@@ -109,9 +111,7 @@ def build_filename_from_template(
     }
 
     # Apply replacements
-    filename = template
-    for key, value in replacements.items():
-        filename = filename.replace(f"{{{key}}}", value)
+    filename = template.format_map(replacements)
 
     # Add extension
     if not filename.lower().endswith(".pdf"):

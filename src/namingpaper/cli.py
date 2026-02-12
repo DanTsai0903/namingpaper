@@ -368,6 +368,11 @@ def batch(
     # Detect internal collisions
     items = detect_batch_collisions(items)
 
+    # Compute status counts once
+    ok_count = sum(1 for i in items if i.status == BatchItemStatus.OK)
+    collision_count = sum(1 for i in items if i.status == BatchItemStatus.COLLISION)
+    error_count = sum(1 for i in items if i.status == BatchItemStatus.ERROR)
+
     # JSON output mode
     if json_output:
         output = {
@@ -383,9 +388,9 @@ def batch(
             ],
             "summary": {
                 "total": len(items),
-                "ok": sum(1 for i in items if i.status == BatchItemStatus.OK),
-                "collision": sum(1 for i in items if i.status == BatchItemStatus.COLLISION),
-                "error": sum(1 for i in items if i.status == BatchItemStatus.ERROR),
+                "ok": ok_count,
+                "collision": collision_count,
+                "error": error_count,
             },
         }
         console.print(json.dumps(output, indent=2))
@@ -429,10 +434,6 @@ def batch(
     console.print()
 
     # Summary
-    ok_count = sum(1 for i in items if i.status == BatchItemStatus.OK)
-    collision_count = sum(1 for i in items if i.status == BatchItemStatus.COLLISION)
-    error_count = sum(1 for i in items if i.status == BatchItemStatus.ERROR)
-
     console.print(
         f"Summary: [green]{ok_count} ready[/green], "
         f"[yellow]{collision_count} collisions[/yellow], "

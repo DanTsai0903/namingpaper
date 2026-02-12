@@ -50,13 +50,9 @@ def validate_rename(operation: RenameOperation) -> list[str]:
     """Validate a rename operation, returning list of warnings."""
     warnings = []
 
-    # Check source exists
-    if not operation.source.exists():
-        raise RenameError(f"Source file does not exist: {operation.source}")
-
-    # Check source is a file (not directory or symlink)
+    # Check source is a file (not directory or symlink); is_file() returns False if nonexistent
     if not operation.source.is_file():
-        raise RenameError(f"Source is not a regular file: {operation.source}")
+        raise RenameError(f"Source is not a regular file or does not exist: {operation.source}")
 
     # Don't follow symlinks
     if operation.source.is_symlink():
@@ -95,12 +91,13 @@ def execute_rename(
         The final destination path, or None if skipped
     """
     # Validate first
-    validate_rename(operation)
+    warnings = validate_rename(operation)
+    has_collision = any("Destination already exists" in w for w in warnings)
 
     destination = operation.destination
 
     # Handle collisions
-    if check_collision(destination):
+    if has_collision:
         match collision_strategy:
             case CollisionStrategy.SKIP:
                 return None
