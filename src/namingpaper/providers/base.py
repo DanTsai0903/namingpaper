@@ -1,8 +1,13 @@
 """Abstract base class for AI providers."""
 
+import json
+import re
 from abc import ABC, abstractmethod
 
 from namingpaper.models import PDFContent, PaperMetadata
+
+_RE_JSON_BLOCK = re.compile(r"```json\s*(.*?)```", re.DOTALL)
+_RE_CODE_BLOCK = re.compile(r"```\s*(.*?)```", re.DOTALL)
 
 
 EXTRACTION_PROMPT = """Extract metadata from this academic paper.
@@ -53,3 +58,27 @@ class AIProvider(ABC):
         if len(text) <= max_chars:
             return text
         return text[:max_chars] + "\n\n[Text truncated...]"
+
+    def _parse_response_json(self, response_text: str, provider_name: str) -> PaperMetadata:
+        """Extract JSON from AI response text and return PaperMetadata.
+
+        Handles responses wrapped in markdown code blocks.
+        """
+        json_text = response_text
+        match = _RE_JSON_BLOCK.search(response_text)
+        if match:
+            json_text = match.group(1)
+        else:
+            match = _RE_CODE_BLOCK.search(response_text)
+            if match:
+                json_text = match.group(1)
+
+        try:
+            data = json.loads(json_text.strip())
+        except json.JSONDecodeError as e:
+            raise RuntimeError(
+                f"Failed to parse JSON from {provider_name} response: {e}\n"
+                f"Response: {response_text[:500]}"
+            ) from e
+
+        return PaperMetadata(**data)

@@ -27,8 +27,8 @@ def sanitize_filename(name: str) -> str:
     return name
 
 
-def format_authors(authors: list[str], max_authors: int = 3) -> str:
-    """Format author list for filename.
+def _format_name_list(names: list[str], max_names: int = 3) -> str:
+    """Format a list of names with Oxford comma rules.
 
     Examples:
         ["Smith"] -> "Smith"
@@ -36,37 +36,27 @@ def format_authors(authors: list[str], max_authors: int = 3) -> str:
         ["Smith", "Jones", "Brown"] -> "Smith, Jones, and Brown"
         ["Smith", "Jones", "Brown", "Davis"] -> "Smith et al"
     """
-    if not authors:
+    if not names:
         return "Unknown"
 
-    if len(authors) > max_authors:
-        return f"{authors[0]} et al"
-    elif len(authors) == 1:
-        return authors[0]
-    elif len(authors) == 2:
-        return f"{authors[0]} and {authors[1]}"
+    if len(names) > max_names:
+        return f"{names[0]} et al"
+    elif len(names) == 1:
+        return names[0]
+    elif len(names) == 2:
+        return f"{names[0]} and {names[1]}"
     else:
-        return ", ".join(authors[:-1]) + f", and {authors[-1]}"
+        return ", ".join(names[:-1]) + f", and {names[-1]}"
+
+
+def format_authors(authors: list[str], max_authors: int = 3) -> str:
+    """Format author last names for filename."""
+    return _format_name_list(authors, max_authors)
 
 
 def format_authors_full(authors_full: list[str], max_authors: int = 3) -> str:
-    """Format full author names for filename.
-
-    Examples:
-        ["Eugene F. Fama"] -> "Eugene F. Fama"
-        ["Eugene F. Fama", "Kenneth R. French"] -> "Eugene F. Fama and Kenneth R. French"
-    """
-    if not authors_full:
-        return "Unknown"
-
-    if len(authors_full) > max_authors:
-        return f"{authors_full[0]} et al"
-    elif len(authors_full) == 1:
-        return authors_full[0]
-    elif len(authors_full) == 2:
-        return f"{authors_full[0]} and {authors_full[1]}"
-    else:
-        return ", ".join(authors_full[:-1]) + f", and {authors_full[-1]}"
+    """Format full author names for filename."""
+    return _format_name_list(authors_full, max_authors)
 
 
 def _abbreviate_name(full_name: str) -> str:
@@ -91,19 +81,8 @@ def format_authors_abbrev(authors_full: list[str], max_authors: int = 3) -> str:
     Examples:
         ["Eugene F. Fama", "Kenneth R. French"] -> "Fama, E. F. and French, K. R."
     """
-    if not authors_full:
-        return "Unknown"
-
     abbreviated = [_abbreviate_name(name) for name in authors_full]
-
-    if len(abbreviated) > max_authors:
-        return f"{abbreviated[0]} et al"
-    elif len(abbreviated) == 1:
-        return abbreviated[0]
-    elif len(abbreviated) == 2:
-        return f"{abbreviated[0]} and {abbreviated[1]}"
-    else:
-        return ", ".join(abbreviated[:-1]) + f", and {abbreviated[-1]}"
+    return _format_name_list(abbreviated, max_authors)
 
 
 def format_journal(journal: str, journal_abbrev: str | None) -> str:

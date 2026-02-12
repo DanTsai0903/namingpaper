@@ -1,7 +1,5 @@
 """Google Gemini provider implementation."""
 
-import json
-
 from namingpaper.config import get_settings
 from namingpaper.models import PDFContent, PaperMetadata
 from namingpaper.providers.base import AIProvider, EXTRACTION_PROMPT
@@ -29,6 +27,7 @@ class GeminiProvider(AIProvider):
             )
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model or self.DEFAULT_MODEL)
+        self._request_options = {"timeout": 120}
 
     async def extract_metadata(self, content: PDFContent) -> PaperMetadata:
         """Extract metadata using Gemini."""
@@ -48,7 +47,9 @@ class GeminiProvider(AIProvider):
 
         # Call Gemini API
         try:
-            response = self.model.generate_content(parts)
+            response = self.model.generate_content(
+                parts, request_options=self._request_options
+            )
         except Exception as e:
             err = str(e).lower()
             if "not found" in err or "404" in err or "does not exist" in err:
@@ -64,18 +65,4 @@ class GeminiProvider(AIProvider):
         # Parse response
         response_text = response.text
 
-        # Extract JSON from response
-        json_text = response_text
-        if "```json" in response_text:
-            json_text = response_text.split("```json")[1].split("```")[0]
-        elif "```" in response_text:
-            json_text = response_text.split("```")[1].split("```")[0]
-
-        try:
-            data = json.loads(json_text.strip())
-        except json.JSONDecodeError as e:
-            raise RuntimeError(
-                f"Failed to parse JSON from Gemini response: {e}\nResponse: {response_text[:500]}"
-            ) from e
-
-        return PaperMetadata(**data)
+        return self._parse_response_json(response_text, "Gemini")

@@ -152,14 +152,17 @@ async def process_batch(
     else:
         # Parallel processing with semaphore
         semaphore = asyncio.Semaphore(parallel)
-        completed = [0]  # Mutable counter for callback
+        lock = asyncio.Lock()
+        completed = 0
 
         async def process_with_semaphore(pdf_path: Path) -> BatchItem:
+            nonlocal completed
             async with semaphore:
                 item = await process_single_file(pdf_path, provider, template, output_dir)
-                completed[0] += 1
-                if progress_callback:
-                    progress_callback(completed[0], total, item)
+                async with lock:
+                    completed += 1
+                    if progress_callback:
+                        progress_callback(completed, total, item)
                 return item
 
         results = await asyncio.gather(

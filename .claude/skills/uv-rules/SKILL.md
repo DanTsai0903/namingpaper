@@ -1,6 +1,6 @@
 ---
 name: uv-rules
-description: Rules and guidelines for using uv as the Python package manager in this project. Use when managing dependencies, running commands, or troubleshooting the venv.
+description: MUST READ before running any pip, uv, venv, or package-related commands. Contains strict rules for uv usage — violating them can break the project.
 metadata:
   author: namingpaper
   version: "1.0"

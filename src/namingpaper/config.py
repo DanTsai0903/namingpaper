@@ -30,7 +30,7 @@ class Settings(BaseSettings):
         default=None, description="Override default model for provider"
     )
     max_text_chars: int = Field(
-        default=8000, description="Max characters of text to send to AI"
+        default=8000, ge=100, le=100000, description="Max characters of text to send to AI"
     )
     min_confidence: float = Field(
         default=0.5,
@@ -50,10 +50,10 @@ class Settings(BaseSettings):
 
     # Filename formatting
     max_authors: int = Field(
-        default=3, description="Max authors before using 'et al'"
+        default=3, ge=1, description="Max authors before using 'et al'"
     )
     max_filename_length: int = Field(
-        default=200, description="Maximum filename length"
+        default=200, ge=20, le=255, description="Maximum filename length"
     )
 
     @classmethod

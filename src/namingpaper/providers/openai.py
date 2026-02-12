@@ -1,7 +1,6 @@
 """OpenAI provider implementation."""
 
 import base64
-import json
 
 from namingpaper.config import get_settings
 from namingpaper.models import PDFContent, PaperMetadata
@@ -26,7 +25,7 @@ class OpenAIProvider(AIProvider):
             raise ImportError(
                 "OpenAI package not installed. Run: pip install namingpaper[openai]"
             )
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(api_key=api_key, timeout=120.0)
         self.model = model or self.DEFAULT_MODEL
 
     async def extract_metadata(self, content: PDFContent) -> PaperMetadata:
@@ -85,20 +84,8 @@ class OpenAIProvider(AIProvider):
             raise
 
         # Parse response
+        if not response.choices or not response.choices[0].message.content:
+            raise RuntimeError("OpenAI returned an empty response.")
         response_text = response.choices[0].message.content
 
-        # Extract JSON from response
-        json_text = response_text
-        if "```json" in response_text:
-            json_text = response_text.split("```json")[1].split("```")[0]
-        elif "```" in response_text:
-            json_text = response_text.split("```")[1].split("```")[0]
-
-        try:
-            data = json.loads(json_text.strip())
-        except json.JSONDecodeError as e:
-            raise RuntimeError(
-                f"Failed to parse JSON from OpenAI response: {e}\nResponse: {response_text[:500]}"
-            ) from e
-
-        return PaperMetadata(**data)
+        return self._parse_response_json(response_text, "OpenAI")

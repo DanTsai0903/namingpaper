@@ -1,7 +1,7 @@
 """Ollama provider implementation for local models."""
 
 import base64
-import json
+import logging
 
 import httpx
 
@@ -35,6 +35,7 @@ class OllamaProvider(AIProvider):
         self.text_model = text_model or model or self.DEFAULT_TEXT_MODEL
         self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip("/")
         self.keep_alive = keep_alive
+        self._client: httpx.AsyncClient | None = None
 
     async def extract_metadata(self, content: PDFContent) -> PaperMetadata:
         """Extract metadata using Ollama pipeline.
@@ -48,8 +49,14 @@ class OllamaProvider(AIProvider):
         if content.text and len(content.text.strip()) > 100:
             combined_text = content.text
         elif content.first_page_image:
-            ocr_text = await self._ocr_extract(content.first_page_image)
-            combined_text = f"{ocr_text}\n\n{content.text}" if content.text else ocr_text
+            try:
+                ocr_text = await self._ocr_extract(content.first_page_image)
+                combined_text = f"{ocr_text}\n\n{content.text}" if content.text else ocr_text
+            except RuntimeError:
+                logging.getLogger(__name__).warning(
+                    "OCR model unavailable, falling back to text-only extraction"
+                )
+                combined_text = content.text or ""
         else:
             combined_text = content.text
 
@@ -101,31 +108,23 @@ class OllamaProvider(AIProvider):
                 f"Run: ollama pull {self.text_model}"
             )
 
-        # Extract JSON from response
-        json_text = response_text
-        if "```json" in response_text:
-            json_text = response_text.split("```json")[1].split("```")[0]
-        elif "```" in response_text:
-            json_text = response_text.split("```")[1].split("```")[0]
+        return self._parse_response_json(response_text, "Ollama")
 
-        try:
-            data = json.loads(json_text.strip())
-        except json.JSONDecodeError as e:
-            raise RuntimeError(
-                f"Failed to parse JSON from Ollama response: {e}\nResponse: {response_text[:500]}"
-            ) from e
-
-        return PaperMetadata(**data)
+    def _get_client(self) -> httpx.AsyncClient:
+        """Get or create a reusable async HTTP client."""
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(timeout=300.0)
+        return self._client
 
     async def _call_ollama(self, endpoint: str, payload: dict) -> dict:
         """Make a request to Ollama API."""
         try:
-            async with httpx.AsyncClient(timeout=300.0) as client:
-                response = await client.post(
-                    f"{self.base_url}{endpoint}",
-                    json=payload,
-                )
-                response.raise_for_status()
+            client = self._get_client()
+            response = await client.post(
+                f"{self.base_url}{endpoint}",
+                json=payload,
+            )
+            response.raise_for_status()
         except httpx.HTTPStatusError as e:
             model = payload.get("model", "unknown")
             if e.response.status_code == 404:
