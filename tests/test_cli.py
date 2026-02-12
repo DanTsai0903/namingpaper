@@ -148,16 +148,9 @@ class TestCheckCommand:
         assert "MISSING" in result.output
 
     def test_check_cloud_provider_with_key(self):
-        import builtins
-        real_import = builtins.__import__
-
-        def mock_import(name, *args, **kwargs):
-            if name == "anthropic":
-                return MagicMock()
-            return real_import(name, *args, **kwargs)
-
+        import sys
         with patch("namingpaper.cli.get_settings") as mock_settings, \
-             patch("builtins.__import__", side_effect=mock_import):
+             patch.dict(sys.modules, {"anthropic": MagicMock()}):
             mock_settings.return_value = MagicMock(
                 ai_provider="claude",
                 anthropic_api_key="sk-test",
