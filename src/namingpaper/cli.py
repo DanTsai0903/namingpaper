@@ -9,6 +9,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich.table import Table
 
+from namingpaper import __version__
 from namingpaper.config import get_settings
 from namingpaper.extractor import plan_rename_sync
 from namingpaper.models import BatchItem, BatchItemStatus, LowConfidenceError
@@ -25,6 +26,35 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+
+
+def _show_version(value: bool) -> None:
+    """Print version and exit when --version/-v is provided."""
+    if value:
+        console.print(f"namingpaper {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            "-v",
+            callback=_show_version,
+            is_eager=True,
+            help="Show namingpaper version and exit",
+        ),
+    ] = False,
+) -> None:
+    """namingpaper CLI."""
+
+
+@app.command()
+def version() -> None:
+    """Show namingpaper version."""
+    console.print(f"namingpaper {__version__}")
 
 
 @app.command()

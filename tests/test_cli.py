@@ -7,10 +7,25 @@ import pytest
 from typer.testing import CliRunner
 
 from namingpaper.cli import app
+from namingpaper import __version__
 from namingpaper.models import LowConfidenceError, PaperMetadata, RenameOperation
 
 
 runner = CliRunner()
+
+
+class TestVersionCommand:
+    def test_version(self):
+        result = runner.invoke(app, ["version"])
+
+        assert result.exit_code == 0
+        assert f"namingpaper {__version__}" in result.output
+
+    def test_version_short_flag(self):
+        result = runner.invoke(app, ["-v"])
+
+        assert result.exit_code == 0
+        assert f"namingpaper {__version__}" in result.output
 
 
 @pytest.fixture

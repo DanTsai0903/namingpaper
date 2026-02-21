@@ -137,6 +137,15 @@ Show available filename templates.
 namingpaper templates
 ```
 
+### Version Command
+
+Show the installed namingpaper version.
+
+```bash
+namingpaper version
+namingpaper -v
+```
+
 ## Examples
 
 ### Single File
