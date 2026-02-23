@@ -161,7 +161,14 @@ namingpaper uninstall
 
 # Run uninstall automatically
 namingpaper uninstall --execute --yes
+
+# True cleanup (also removes ~/.namingpaper config/data)
+namingpaper uninstall --execute --yes --purge
 ```
+
+Notes:
+- `--purge` removes `~/.namingpaper` (for example `~/.namingpaper/config.toml`).
+- Uninstall does not remove external provider assets such as Ollama models.
 
 ## Examples
 

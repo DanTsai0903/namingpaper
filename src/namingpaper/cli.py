@@ -776,6 +776,13 @@ def uninstall(
             help="Skip confirmation prompt",
         ),
     ] = False,
+    purge: Annotated[
+        bool,
+        typer.Option(
+            "--purge",
+            help="Also remove namingpaper user config/data (~/.namingpaper)",
+        ),
+    ] = False,
 ) -> None:
     """Uninstall namingpaper."""
     manager = manager.lower()
@@ -821,6 +828,26 @@ def uninstall(
         console.print("[green]Uninstall complete.[/green]")
         if result.stdout.strip():
             console.print(result.stdout.strip())
+        if not purge:
+            return
+
+        config_dir = Path.home() / ".namingpaper"
+        if not config_dir.exists():
+            console.print("[dim]No user config/data directory found at ~/.namingpaper[/dim]")
+            return
+
+        if not yes:
+            confirmed = typer.confirm(f"Also delete user config/data directory? {config_dir}")
+            if not confirmed:
+                console.print("[yellow]Cleanup skipped.[/yellow]")
+                return
+
+        try:
+            shutil.rmtree(config_dir)
+            console.print(f"[green]Removed:[/green] {config_dir}")
+        except Exception as e:
+            console.print(f"[red]Failed to remove {config_dir}:[/red] {e}")
+            raise typer.Exit(1)
         return
 
     console.print("[red]Uninstall failed.[/red]")

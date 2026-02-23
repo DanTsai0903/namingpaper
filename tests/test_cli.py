@@ -218,3 +218,31 @@ class TestUninstallCommand:
         mock_run.assert_called_once()
         called_cmd = mock_run.call_args[0][0]
         assert called_cmd[2:6] == ["pip", "uninstall", "-y", "namingpaper"]
+
+    def test_uninstall_execute_with_purge_removes_user_dir(self, tmp_path: Path):
+        process_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        config_dir = tmp_path / ".namingpaper"
+        config_dir.mkdir()
+        (config_dir / "config.toml").write_text("ai_provider = 'ollama'")
+
+        with patch("namingpaper.cli.subprocess.run", return_value=process_result), \
+             patch("namingpaper.cli.Path.home", return_value=tmp_path):
+            result = runner.invoke(
+                app,
+                ["uninstall", "--manager", "pip", "--execute", "--yes", "--purge"],
+            )
+
+        assert result.exit_code == 0
+        assert not config_dir.exists()
+
+    def test_uninstall_execute_with_purge_no_dir(self, tmp_path: Path):
+        process_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        with patch("namingpaper.cli.subprocess.run", return_value=process_result), \
+             patch("namingpaper.cli.Path.home", return_value=tmp_path):
+            result = runner.invoke(
+                app,
+                ["uninstall", "--manager", "pip", "--execute", "--yes", "--purge"],
+            )
+
+        assert result.exit_code == 0
+        assert "No user config/data directory found" in result.output
