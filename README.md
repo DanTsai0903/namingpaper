@@ -151,6 +151,18 @@ namingpaper version
 namingpaper -v
 ```
 
+### Update Command
+
+Show or run the update command for your environment.
+
+```bash
+# Preview detected update command
+namingpaper update
+
+# Run update automatically
+namingpaper update --execute --yes
+```
+
 ### Uninstall Command
 
 Show or run the uninstall command for your environment.

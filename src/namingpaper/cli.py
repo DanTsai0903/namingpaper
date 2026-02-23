@@ -857,5 +857,81 @@ def uninstall(
     raise typer.Exit(result.returncode)
 
 
+@app.command()
+def update(
+    manager: Annotated[
+        str,
+        typer.Option(
+            "--manager",
+            "-m",
+            help="Package manager to use: auto, uv, pipx, pip",
+        ),
+    ] = "auto",
+    execute: Annotated[
+        bool,
+        typer.Option(
+            "--execute",
+            "-x",
+            help="Actually run the update command",
+        ),
+    ] = False,
+    yes: Annotated[
+        bool,
+        typer.Option(
+            "--yes",
+            "-y",
+            help="Skip confirmation prompt",
+        ),
+    ] = False,
+) -> None:
+    """Update namingpaper to the latest version."""
+    manager = manager.lower()
+    if manager not in {"auto", "uv", "pipx", "pip"}:
+        console.print(f"[red]Error:[/red] Invalid manager '{manager}'. Use auto, uv, pipx, or pip.")
+        raise typer.Exit(1)
+
+    selected = manager
+    if manager == "auto":
+        if shutil.which("uv"):
+            selected = "uv"
+        elif shutil.which("pipx"):
+            selected = "pipx"
+        else:
+            selected = "pip"
+
+    commands = {
+        "uv": ["uv", "tool", "upgrade", "namingpaper"],
+        "pipx": ["pipx", "upgrade", "namingpaper"],
+        "pip": [sys.executable, "-m", "pip", "install", "--upgrade", "namingpaper"],
+    }
+    cmd = commands[selected]
+    cmd_display = " ".join(cmd)
+
+    if not execute:
+        console.print(f"[blue]Detected manager:[/blue] {selected}")
+        console.print(f"[blue]Update command:[/blue] {cmd_display}")
+        console.print("[dim]Dry run mode. Use --execute to run it automatically.[/dim]")
+        return
+
+    if not yes:
+        confirmed = typer.confirm(f"Run update command? {cmd_display}")
+        if not confirmed:
+            console.print("[yellow]Cancelled.[/yellow]")
+            raise typer.Exit(0)
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode == 0:
+        console.print("[green]Update complete.[/green]")
+        if result.stdout.strip():
+            console.print(result.stdout.strip())
+        return
+
+    console.print("[red]Update failed.[/red]")
+    if result.stderr.strip():
+        console.print(result.stderr.strip())
+    console.print(f"[yellow]Try running manually:[/yellow] {cmd_display}")
+    raise typer.Exit(result.returncode)
+
+
 if __name__ == "__main__":
     app()

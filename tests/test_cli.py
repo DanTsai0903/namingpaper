@@ -246,3 +246,30 @@ class TestUninstallCommand:
 
         assert result.exit_code == 0
         assert "No user config/data directory found" in result.output
+
+
+class TestUpdateCommand:
+    def test_update_auto_detects_uv(self):
+        with patch("namingpaper.cli.shutil.which") as mock_which:
+            mock_which.side_effect = lambda cmd: "/usr/bin/uv" if cmd == "uv" else None
+            result = runner.invoke(app, ["update"])
+
+        assert result.exit_code == 0
+        assert "Detected manager" in result.output
+        assert "uv tool upgrade namingpaper" in result.output
+
+    def test_update_explicit_pipx(self):
+        result = runner.invoke(app, ["update", "--manager", "pipx"])
+
+        assert result.exit_code == 0
+        assert "pipx upgrade namingpaper" in result.output
+
+    def test_update_execute_calls_pip_upgrade(self):
+        process_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        with patch("namingpaper.cli.subprocess.run", return_value=process_result) as mock_run:
+            result = runner.invoke(app, ["update", "--manager", "pip", "--execute", "--yes"])
+
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+        called_cmd = mock_run.call_args[0][0]
+        assert called_cmd[2:] == ["pip", "install", "--upgrade", "namingpaper"]
