@@ -190,3 +190,31 @@ class TestCheckCommand:
 
         assert result.exit_code == 1
         assert "UNKNOWN" in result.output
+
+
+class TestUninstallCommand:
+    def test_uninstall_auto_detects_uv(self):
+        with patch("namingpaper.cli.shutil.which") as mock_which:
+            mock_which.side_effect = lambda cmd: "/usr/bin/uv" if cmd == "uv" else None
+            result = runner.invoke(app, ["uninstall"])
+
+        assert result.exit_code == 0
+        assert "Detected manager" in result.output
+        assert "uv" in result.output
+        assert "uv tool uninstall namingpaper" in result.output
+
+    def test_uninstall_explicit_pipx(self):
+        result = runner.invoke(app, ["uninstall", "--manager", "pipx"])
+
+        assert result.exit_code == 0
+        assert "pipx uninstall namingpaper" in result.output
+
+    def test_uninstall_execute_with_yes_uses_pip_y_flag(self):
+        process_result = MagicMock(returncode=0, stdout="ok", stderr="")
+        with patch("namingpaper.cli.subprocess.run", return_value=process_result) as mock_run:
+            result = runner.invoke(app, ["uninstall", "--manager", "pip", "--execute", "--yes"])
+
+        assert result.exit_code == 0
+        mock_run.assert_called_once()
+        called_cmd = mock_run.call_args[0][0]
+        assert called_cmd[2:6] == ["pip", "uninstall", "-y", "namingpaper"]

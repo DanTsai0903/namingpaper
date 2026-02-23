@@ -38,6 +38,11 @@ uv tool upgrade namingpaper
 # or
 pipx upgrade namingpaper
 
+# Uninstall
+uv tool uninstall namingpaper
+# or
+pipx uninstall namingpaper
+
 # Or install from source
 git clone https://github.com/DanTsai0903/namingpaper.git
 cd namingpaper
@@ -144,6 +149,18 @@ Show the installed namingpaper version.
 ```bash
 namingpaper version
 namingpaper -v
+```
+
+### Uninstall Command
+
+Show or run the uninstall command for your environment.
+
+```bash
+# Preview detected uninstall command
+namingpaper uninstall
+
+# Run uninstall automatically
+namingpaper uninstall --execute --yes
 ```
 
 ## Examples

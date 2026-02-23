@@ -1,6 +1,9 @@
 """CLI entry point for namingpaper."""
 
 from pathlib import Path
+import shutil
+import subprocess
+import sys
 from typing import Annotated
 
 import typer
@@ -745,6 +748,86 @@ def check(
     else:
         console.print("[yellow]Some checks failed. See details above.[/yellow]")
         raise typer.Exit(1)
+
+
+@app.command()
+def uninstall(
+    manager: Annotated[
+        str,
+        typer.Option(
+            "--manager",
+            "-m",
+            help="Package manager to use: auto, uv, pipx, pip",
+        ),
+    ] = "auto",
+    execute: Annotated[
+        bool,
+        typer.Option(
+            "--execute",
+            "-x",
+            help="Actually run the uninstall command",
+        ),
+    ] = False,
+    yes: Annotated[
+        bool,
+        typer.Option(
+            "--yes",
+            "-y",
+            help="Skip confirmation prompt",
+        ),
+    ] = False,
+) -> None:
+    """Uninstall namingpaper."""
+    manager = manager.lower()
+    if manager not in {"auto", "uv", "pipx", "pip"}:
+        console.print(f"[red]Error:[/red] Invalid manager '{manager}'. Use auto, uv, pipx, or pip.")
+        raise typer.Exit(1)
+
+    selected = manager
+    if manager == "auto":
+        if shutil.which("uv"):
+            selected = "uv"
+        elif shutil.which("pipx"):
+            selected = "pipx"
+        else:
+            selected = "pip"
+
+    commands = {
+        "uv": ["uv", "tool", "uninstall", "namingpaper"],
+        "pipx": ["pipx", "uninstall", "namingpaper"],
+        "pip": [sys.executable, "-m", "pip", "uninstall", "namingpaper"],
+    }
+    cmd = commands[selected]
+    cmd_display = " ".join(cmd)
+
+    if not execute:
+        console.print(f"[blue]Detected manager:[/blue] {selected}")
+        console.print(f"[blue]Uninstall command:[/blue] {cmd_display}")
+        console.print("[dim]Dry run mode. Use --execute to run it automatically.[/dim]")
+        return
+
+    if not yes:
+        confirmed = typer.confirm(f"Run uninstall command? {cmd_display}")
+        if not confirmed:
+            console.print("[yellow]Cancelled.[/yellow]")
+            raise typer.Exit(0)
+
+    run_cmd = cmd.copy()
+    if selected == "pip" and yes:
+        run_cmd.insert(4, "-y")
+
+    result = subprocess.run(run_cmd, capture_output=True, text=True)
+    if result.returncode == 0:
+        console.print("[green]Uninstall complete.[/green]")
+        if result.stdout.strip():
+            console.print(result.stdout.strip())
+        return
+
+    console.print("[red]Uninstall failed.[/red]")
+    if result.stderr.strip():
+        console.print(result.stderr.strip())
+    console.print(f"[yellow]Try running manually:[/yellow] {cmd_display}")
+    raise typer.Exit(result.returncode)
 
 
 if __name__ == "__main__":
